@@ -1,0 +1,91 @@
+<style>
+* {
+  font-family: arial;
+  font-size: 16px;
+  letter-spacing: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+input {
+  display: block;
+  box-shadow: inset 0 0 0 1px #ccc;
+  outline: 0;
+  border: 0;
+  width: 1000px;
+  margin: 15px auto;
+  padding: 15px;
+}
+
+input:hover, input:focus {
+  box-shadow: inset 0 0 0 1px #aaf;
+}
+
+#tx {
+  margin: 15px auto;
+  padding: 15px;
+  width: 1000px;
+  transition: all .25s;
+}
+
+#tx:hover {
+  background: #eee;
+}
+
+a {
+  text-decoration: none;
+}
+
+.blue {
+  border-bottom: 1px solid #aaf;
+  color: #00f;
+}
+
+.blue:hover {
+  color: #aaf;
+}
+
+#red {
+  border-bottom: 1px solid #faa;
+  color: #f00;
+}
+
+#red:hover {
+  color: #faa;
+}
+</style>
+<script>
+var alerted = 0;
+var string = "TXID - Confirmations";
+var usertxid = document.getElementById("txidinput").value;
+var json;
+function GetConf()
+{
+usertxid = document.getElementById("txidinput").value;
+xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function(){
+	if(xhttp.readyState === 4 && xhttp.status === 200){
+		json = JSON.parse(xhttp.responseText);
+		if(json.confirmations == 0)
+		{
+			document.getElementById("txstatus").innerHTML = usertxid+" - Unconfirmed";
+		}
+		if(json.confirmations != 0)
+		{
+			document.getElementById("txstatus").innerHTML = usertxid+" - "+json.confirmations+" Cofnrimation(s)";
+			alerted = 1;
+			alert("TX ID is confirmed!");
+		}
+	}
+	if(xhttp.status === 400) {
+		document.getElementById("txstatus").innerHTML = "Invalid TX ID!";
+	}
+}
+xhttp.open("GET", "https://blockexplorer.com/api/tx/"+usertxid, true);
+xhttp.send();
+}
+</script>
+<body onload="setTimeout(GetConf(), 250)">
+<input onkeyup="GetConf();" type="text" id="txidinput" value="e083c07b1337921746885b6adf178812925c52421e6e5bdfc3776d8d1b9368b7"></input>
+<div id="tx"><a href="#" id="txstatus" class="blue">e083c07b1337921746885b6adf178812925c52421e6e5bdfc3776d8d1b9368b7 - Unconfirmed</a></div>
+</body>
