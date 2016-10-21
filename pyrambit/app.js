@@ -1104,7 +1104,7 @@ var BetBox = React.createClass({
       var hash = betStore.state.nextHash;
       console.assert(typeof hash === 'string');
 
-      var wagerSatoshis = prompt("What is your wager?", "100");
+      var wagerSatoshis = prompt("What is your wager?", "100") * 100;
       var multiplier = multiplier223;
       var payoutSatoshis = wagerSatoshis * multiplier;
 
