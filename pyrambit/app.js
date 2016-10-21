@@ -1104,16 +1104,17 @@ var BetBox = React.createClass({
       var hash = betStore.state.nextHash;
       console.assert(typeof hash === 'string');
 
-      var wagerSatoshis = prompt("What is your wager?", "100");
+      var multiplier = multiplier223;
+      var wagerSatoshis = prompt("What is your wager?\n(Your chances to win are: "+helpers.multiplierToWinProb(multiplier)+"%", "100");
 	  console.log(wagerSatoshis);
 	  wagerSatoshis = wagerSatoshis * 100;
 	  console.log(wagerSatoshis);
-      var multiplier = multiplier223;
       var payoutSatoshis = wagerSatoshis * multiplier;
 
       var number = helpers.calcNumber(
         cond, helpers.multiplierToWinProb(multiplier)
       );
+	 
 
       var params = {
         wager: wagerSatoshis,
