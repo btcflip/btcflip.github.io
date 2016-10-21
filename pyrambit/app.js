@@ -9,7 +9,7 @@ var config = {
   app_name: 'Pyrambit',
   // - For your faucet to work, you must register your site at Recaptcha
   // - https://www.google.com/recaptcha/intro/index.html
-  recaptcha_sitekey: '6LdpqCITAAAAAGnR1RkidYH98yFsyfh4CXgpQ4Gy',  // <----- EDIT ME!
+  recaptcha_sitekey: '6LdpqCITAAAAAAi2THkUWCMeUHgR8BW6B54Bhso8',  // <----- EDIT ME!
   redirect_uri: 'https://bitsino.xyz/pyrambit',
   mp_browser_uri: 'https://www.moneypot.com',
   mp_api_uri: 'https://api.moneypot.com',
