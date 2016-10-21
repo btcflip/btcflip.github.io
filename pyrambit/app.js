@@ -12,8 +12,8 @@ var config = {
   recaptcha_sitekey: '6LdpqCITAAAAAAi2THkUWCMeUHgR8BW6B54Bhso8',  // <----- EDIT ME!
   redirect_uri: 'https://bitsino.xyz/pyrambit',
   mp_browser_uri: 'https://www.moneypot.com',
-  mp_api_uri: 'https://api.moneypot.com',
-  chat_uri: '//socket.moneypot.com',
+  mp_api_uri: 'http://api.moneypot.com',
+  chat_uri: 'http://socket.moneypot.com',
   // - Show debug output only if running on localhost
   debug: isRunningLocally(),
   // - Set this to true if you want users that come to http:// to be redirected
