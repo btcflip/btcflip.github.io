@@ -1107,6 +1107,7 @@ var BetBox = React.createClass({
       var wagerSatoshis = prompt("What is your wager?", "100");
 	  console.log(wagerSatoshis);
 	  wagerSatoshis = wagerSatoshis * 100;
+	  console.log(wagerSatoshis);
       var multiplier = multiplier223;
       var payoutSatoshis = wagerSatoshis * multiplier;
 
