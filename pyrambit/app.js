@@ -21,7 +21,7 @@ var config = {
   force_https_redirect: !isRunningLocally(),
   // - Configure the house edge (default is 1%)
   //   Must be between 0.0 (0%) and 1.0 (100%)
-  house_edge: 0.15,
+  house_edge: 0.01,
   chat_buffer_size: 250,
   // - The amount of bets to show on screen in each tab
   bet_buffer_size: 25
@@ -86,9 +86,16 @@ helpers.formatDateToTime = function(dateJson) {
 helpers.multiplierToWinProb = function(multiplier) {
   console.assert(typeof multiplier === 'number');
   console.assert(multiplier > 0);
+  var n;
+  if(multiplier == 1024.0) {
+	 n = 1.0 - 0.15;
+  }
+  else {
+	  n = 1.0 - config.house_edge;
+	  
+  }
 
   // For example, n is 0.99 when house edge is 1%
-  var n = 1.0 - config.house_edge;
 
   return n / multiplier;
 };
