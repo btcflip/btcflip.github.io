@@ -1188,45 +1188,72 @@ var BetBox = React.createClass({
 	  el.div(
 		{className: 'y'},
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "4.0")
+			
+			},,
 			 '4x'
 			),
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "8.0")
+			
+			},,
 			'8x'
 			)
 	  ),
 	  el.div(
 		{className: 'y'},
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "16.0")
+			
+			},,
 			'16x'
 			),
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "32.0")
+			
+			},,
 			'32x'
 			),			
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "64.0")
+			
+			},,
 			'64x'
 			) 
 	  ),
 	  el.div(
 		{className: 'y'},
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "128.0")
+			
+			},,
 			'128x'
 			),
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "256.0")
+			
+			},,
 			'256x'
 			),	
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "512.0")
+			
+			},,
 			'512x'
 			),				
 			el.div(
-			{className: 'z'},
+			{className: 'z',
+			 onClick: this._makeBetHandler('>', "1024.0")
+			
+			},,
 			'1024x'
 			) 
 	  )
