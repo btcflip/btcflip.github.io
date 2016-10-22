@@ -673,8 +673,8 @@ var UserBox = React.createClass({
     return false;
   },
   _faucet: function() {
-	document.getElementById("faucetcaptcha").style = "visiblity:shown;"
-	  
+	//document.getElementById("faucetcaptcha").style = "visiblity:shown;"
+	alert("Faucet is broken for now."); 
 	  
   },
 
