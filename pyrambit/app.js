@@ -674,7 +674,7 @@ var UserBox = React.createClass({
   },
   _faucet: function() {
 	//document.getElementById("faucetcaptcha").style = "visiblity:shown;"
-	alert("Faucet is broken for now."); 
+	alert("Faucet is broken for now. Please deposit or go to other MoneyPot powered sites, claim the faucet, withdraw and deposit here."); 
 	  
   },
 
