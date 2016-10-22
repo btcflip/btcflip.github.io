@@ -524,7 +524,7 @@ var worldStore = new Store('world', {
   accessToken: access_token,
   isRefreshingUser: false,
   hotkeysEnabled: false,
-  currTab: 'ALL_BETS',
+  currTab: 'MY_BETS',
   // TODO: Turn this into myBets or something
   bets: new CBuffer(config.bet_buffer_size),
   // TODO: Fetch list on load alongside socket subscription
@@ -674,7 +674,7 @@ var UserBox = React.createClass({
   },
   _faucet: function() {
 	//document.getElementById("faucetcaptcha").style = "visiblity:shown;"
-	alert("Faucet is broken for now. Please deposit or go to other MoneyPot powered sites, claim the faucet, withdraw and deposit here."); 
+	alert("Faucet is broken for now."); 
 	  
   },
 
@@ -735,19 +735,9 @@ var UserBox = React.createClass({
 		'Withdraw'
 		),
 		el.div(
-		{onClick: this._faucet},
-		'Faucet'
-		),
-		el.div(
 		{onClick: this._onLogout
 		},
 		'Logout'
-		),
-		el.div(
-		{className: 'faucetcss',
-		id: 'faucetcaptcha',
-		style: {visibility: 'hidden'}},
-		React.createElement(FaucetTabContent, null)
 		)
 		)))
 	
@@ -1031,8 +1021,7 @@ var ChatBox = React.createClass({
               return el.li(
                 {
                   // Use message id as unique key
-                  key: m.id,
-				  className: 'yaha'
+                  key: m.id
                 },
                 el.span(
                   {
@@ -1200,12 +1189,12 @@ var BetBox = React.createClass({
 	  el.div(
 	  {className: 'z',
 	  onClick: this._makeBetHandler('>', "4.0")},
-	  '4x'
+	  '4'
 	  ),
 	  el.div(
 	  {className: 'z',
 	  onClick: this._makeBetHandler('>', "8.0")},
-	  '8x'
+	  '8'
 	  )),
 	  el.div(
 	  {className: 'y'},
@@ -1567,6 +1556,58 @@ var AllBetsTabContent = React.createClass({
   }
 });
 
+
+var Tabs = React.createClass({
+  displayName: 'Tabs',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+  },
+  _makeTabChangeHandler: function(tabName) {
+    var self = this;
+    return function() {
+      Dispatcher.sendAction('CHANGE_TAB', tabName);
+    };
+  },
+  render: function() {
+    return el.ul(
+      {className: 'nav nav-tabs'},
+
+      // Only show MY BETS tab if user is logged in
+      !worldStore.state.user ? '' :
+        el.li(
+          {className: worldStore.state.currTab === 'MY_BETS' ? 'active' : ''},
+          el.a(
+            {
+              href: 'javascript:void(0)',
+              onClick: this._makeTabChangeHandler('MY_BETS')
+            },
+            'My Bets'
+          )
+        ),
+      // Display faucet tab even to guests so that they're aware that
+      // this casino has one.
+      !config.recaptcha_sitekey ? '' :
+        el.li(
+          {className: worldStore.state.currTab === 'FAUCET' ? 'active' : ''},
+          el.a(
+            {
+              href: 'javascript:void(0)',
+              onClick: this._makeTabChangeHandler('FAUCET')
+            },
+            el.span(null, 'Faucet ')
+          )
+        )
+    );
+  }
+});
+
+
 var TabContent = React.createClass({
   displayName: 'TabContent',
   _onStoreChange: function() {
@@ -1590,6 +1631,83 @@ var TabContent = React.createClass({
         alert('Unsupported currTab value: ', worldStore.state.currTab);
         break;
     }
+  }
+});
+
+var MyBetsTabContent = React.createClass({
+  displayName: 'MyBetsTabContent',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+  },
+  render: function() {
+    return el.div(
+      null,
+      el.table(
+        {className: 'table'},
+        el.thead(
+          null,
+          el.tr(
+            null,
+            el.th(null, 'ID'),
+            el.th(null, 'Time'),
+            el.th(null, 'Wager'),
+            el.th(null, 'Target'),
+            el.th(null, 'Profit')
+          )
+        ),
+        el.tbody(
+          null,
+          worldStore.state.bets.toArray().map(function(bet) {
+            return el.tr(
+              {
+                key: bet.bet_id || bet.id
+              },
+              // bet id
+              el.td(
+                null,
+                el.a(
+                  {
+                    href: config.mp_browser_uri + '/bets/' + (bet.bet_id || bet.id),
+                    target: '_blank'
+                  },
+                  bet.bet_id || bet.id
+                )
+              ),
+              // Time
+              el.td(
+                null,
+                helpers.formatDateToTime(bet.created_at)
+              ),
+              // wager
+              el.td(
+                null,
+                helpers.round10(bet.wager/100, -2),
+                ' bits'
+              ),
+              // target
+              el.td(
+                null,
+                bet.meta.number.toFixed(2)
+              ),
+              // profit
+              el.td(
+                {style: {color: bet.profit > 0 ? 'green' : 'red'}},
+                bet.profit > 0 ?
+                  '+' + helpers.round10(bet.profit/100, -2) :
+                  helpers.round10(bet.profit/100, -2),
+                ' bits'
+              )
+            );
+          }).reverse()
+        )
+      )
+    );
   }
 });
 
@@ -1636,8 +1754,16 @@ var App = React.createClass({
         el.div(
           {},
           React.createElement(ChatBox, null)
-        )
-
+        ),
+		      el.div(
+        {style: {marginTop: '15px'}},
+		console.log(Tabs),
+        React.createElement(Tabs, null)
+      ),
+		el.div(
+		{},
+		React.createElement(TabContent, null)
+		)
       )
       // Footer
 
