@@ -86,16 +86,9 @@ helpers.formatDateToTime = function(dateJson) {
 helpers.multiplierToWinProb = function(multiplier) {
   console.assert(typeof multiplier === 'number');
   console.assert(multiplier > 0);
-  var n;
-  if(multiplier == 1024.0) {
-	 n = 1.0 - 0.15;
-  }
-  else {
-	  n = 1.0 - config.house_edge;
-	  
-  }
 
   // For example, n is 0.99 when house edge is 1%
+  var n = 1.0 - config.house_edge;
 
   return n / multiplier;
 };
@@ -695,85 +688,50 @@ var UserBox = React.createClass({
     } else if (worldStore.state.user) {
       innerNode = el.div(
         null,
-        // Deposit/Withdraw popup buttons
-        el.div(
-          {className: 'btn-group navbar-left btn-group-xs'},
-          el.button(
-            {
-              type: 'button',
-              className: 'btn navbar-btn btn-xs ' + (betStore.state.wager.error === 'CANNOT_AFFORD_WAGER' ? 'btn-success' : 'btn-default'),
-              onClick: this._openDepositPopup
-            },
-            'Deposit'
-          ),
-          el.button(
-            {
-              type: 'button',
-              className: 'btn btn-default navbar-btn btn-xs',
-              onClick: this._openWithdrawPopup
-            },
-            'Withdraw'
-          )
-        ),
-        // Balance
-        el.span(
-          {
-            className: 'navbar-text',
-            style: {marginRight: '5px'}
-          },
-          (worldStore.state.user.balance / 100) + ' bits',
+		el.div(
+		{},
+		el.div(
+		{className: 'y'},
+		el.div(
+		{className: 'z'},
+		          (worldStore.state.user.balance / 100) + ' bits',
           !worldStore.state.user.unconfirmed_balance ?
            '' :
            el.span(
              {style: { color: '#e67e22'}},
              ' + ' + (worldStore.state.user.unconfirmed_balance / 100) + ' bits pending'
            )
-        ),
-        // Refresh button
-        el.button(
-          {
-            className: 'btn btn-link navbar-btn navbar-left ' + (worldStore.state.isRefreshingUser ? ' rotate' : ''),
-            title: 'Refresh Balance',
-            disabled: worldStore.state.isRefreshingUser,
-            onClick: this._onRefreshUser,
-            style: {
-              paddingLeft: 0,
-              paddingRight: 0,
-              marginRight: '10px'
-            }
-          },
-          el.span({className: 'glyphicon glyphicon-refresh'})
-        ),
-        // Logged in as...
-        el.span(
-          {className: 'navbar-text'},
-          'Logged in as ',
-          el.code(null, worldStore.state.user.uname)
-        ),
-        // Logout button
-        el.button(
-          {
-            type: 'button',
-            onClick: this._onLogout,
-            className: 'navbar-btn btn btn-default'
-          },
-          'Logout'
-        )
-      );
+		
+		),
+		el.div(
+		{className: 'z',
+		onClick: this._openDepositPopup},
+		'Deposit'
+		),
+		el.div(
+		{className: 'z',
+		onClick: this._openWithdrawPopup},
+		'Withdraw'
+		),
+		el.div(
+		{className: 'z'},
+		'Faucet'
+		),
+		el.a(
+		{onClick: this._onLogout,
+		className: 'z'},
+		'Logout'
+		))));
     } else {
       // User needs to login
-      innerNode = el.p(
-        {className: 'navbar-text'},
-        el.a(
-          {
-            href: config.mp_browser_uri + '/oauth/authorize' +
-              '?app_id=' + config.app_id +
-              '&redirect_uri=' + config.redirect_uri,
-            className: 'btn btn-default'
-          },
-          'Login with Moneypot'
-        )
-      );
+      innerNode = el.a(
+		{className: 'z',
+         href: config.mp_browser_uri + '/oauth/authorize' +
+         '?app_id=' + config.app_id +
+         '&redirect_uri=' + config.redirect_uri,
+         className: 'btn btn-default'},
+		'Login'
+		);
     }
 
     return el.div(
@@ -786,36 +744,8 @@ var UserBox = React.createClass({
 var Navbar = React.createClass({
   displayName: 'Navbar',
   render: function() {
-    return el.div(
-      {className: 'navbar'},
-      el.div(
-        {className: 'container-fluid'},
-        el.div(
-          {className: 'navbar-header'},
-          el.a({className: 'navbar-brand', href:'/'}, config.app_name)
-        ),
-        // Links
-        el.ul(
-          {className: 'nav navbar-nav'},
-          el.li(
-            null,
-            el.a(
-              {
-                href: config.mp_browser_uri + '/apps/' + config.app_id,
-                target: '_blank'
-              },
-              'View on Moneypot ',
-              // External site glyphicon
-              el.span(
-                {className: 'glyphicon glyphicon-new-window'}
-              )
-            )
-          )
-        ),
-        // Userbox
-        React.createElement(UserBox, null)
-      )
-    );
+    return React.createElement(UserBox, null);
+
   }
 });
 
@@ -882,11 +812,11 @@ var ChatBoxInput = React.createClass({
             el.input(
               {
                 id: 'chat-input',
-                className: 'form-control',
+                className: 'yahah',
                 type: 'text',
                 value: this.state.text,
                 placeholder: worldStore.state.user ?
-                  'Click here and begin typing...' :
+                  'Type your message...' :
                   'Login to chat',
                 onChange: this._onChange,
                 onKeyPress: this._onKeyPress,
@@ -896,55 +826,12 @@ var ChatBoxInput = React.createClass({
                 disabled: !worldStore.state.user || chatStore.state.loadingInitialMessages
               }
             )
-        ),
-        el.div(
-          {className: 'col-md-3'},
-          el.button(
-            {
-              type: 'button',
-              className: 'btn btn-default btn-block',
-              disabled: !worldStore.state.user ||
-                chatStore.state.waitingForServer ||
-                this.state.text.trim().length === 0,
-              onClick: this._onSend
-            },
-            'Send'
-          )
         )
       )
     );
   }
 });
 
-var ChatUserList = React.createClass({
-  displayName: 'ChatUserList',
-  render: function() {
-    return (
-      el.div(
-        {className: 'panel panel-default'},
-        el.div(
-          {className: 'panel-heading'},
-          'UserList'
-        ),
-        el.div(
-          {className: 'panel-body'},
-          el.ul(
-            {},
-            _.values(chatStore.state.userList).map(function(u) {
-              return el.li(
-                {
-                  key: u.uname
-                },
-                helpers.roleToLabelElement(u.role),
-                ' ' + u.uname
-              );
-            })
-          )
-        )
-      )
-    );
-  }
-});
 
 var ChatBox = React.createClass({
   displayName: 'ChatBox',
@@ -999,13 +886,12 @@ var ChatBox = React.createClass({
               return el.li(
                 {
                   // Use message id as unique key
-                  key: m.id
+                  key: m.id,
+				  className: 'yaha'
                 },
                 el.span(
                   {
-                    style: {
-                      fontFamily: 'monospace'
-                    }
+
                   },
                   helpers.formatDateToTime(m.created_at),
                   ' '
@@ -1058,31 +944,7 @@ var ChatBox = React.createClass({
 
 
 
-var HotkeyToggle = React.createClass({
-  displayName: 'HotkeyToggle',
-  _onClick: function() {
-    Dispatcher.sendAction('TOGGLE_HOTKEYS');
-  },
-  render: function() {
-    return (
-      el.div(
-        {className: 'text-center'},
-        el.button(
-          {
-            type: 'button',
-            className: 'btn btn-default btn-sm',
-            onClick: this._onClick,
-            style: { marginTop: '-15px' }
-          },
-          'Hotkeys: ',
-          worldStore.state.hotkeysEnabled ?
-            el.span({className: 'label label-success'}, 'ON') :
-          el.span({className: 'label label-default'}, 'OFF')
-        )
-      )
-    );
-  }
-});
+
 
 var BetBox = React.createClass({
   displayName: 'BetBox',
@@ -1111,17 +973,13 @@ var BetBox = React.createClass({
       var hash = betStore.state.nextHash;
       console.assert(typeof hash === 'string');
 
+      var wagerSatoshis = prompt("What is your wager?", "100") * 100;
       var multiplier = multiplier223;
-      var wagerSatoshis = prompt("What is your wager?\n(Your chances to win are: "+helpers.multiplierToWinProb(multiplier)*100+"%", "100");
-	  console.log(wagerSatoshis);
-	  wagerSatoshis = wagerSatoshis * 100;
-	  console.log(wagerSatoshis);
       var payoutSatoshis = wagerSatoshis * multiplier;
 
       var number = helpers.calcNumber(
         cond, helpers.multiplierToWinProb(multiplier)
       );
-	 
 
       var params = {
         wager: wagerSatoshis,
@@ -1179,250 +1037,70 @@ var BetBox = React.createClass({
   },
   render: function() {
     return el.div(
+	null,
+	
+		
+	el.div(
       null,
-	  el.div(
-	  {className: 'x'},
-		el.div(
-		{className: 'y'},
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "2.0")
-			
-			},
-			"2x"
-			)
-		)
-	  ),
-	  el.div(
-		{className: 'y'},
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "4.0")
-			
-			},
-			 '4x'
-			),
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "8.0")
-			
-			},
-			'8x'
-			)
-	  ),
-	  el.div(
-		{className: 'y'},
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "16.0")
-			
-			},
-			'16x'
-			),
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "32.0")
-			
-			},
-			'32x'
-			),			
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "64.0")
-			
-			},
-			'64x'
-			) 
-	  ),
-	  el.div(
-		{className: 'y'},
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "128.0")
-			
-			},
-			'128x'
-			),
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "256.0")
-			
-			},
-			'256x'
-			),	
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "512.0")
-			
-			},
-			'512x'
-			),				
-			el.div(
-			{className: 'z',
-			 onClick: this._makeBetHandler('>', "1024.0")
-			
-			},
-			'1024x'
-			) 
-	  )
-    );
-  }
-});
 
-var Tabs = React.createClass({
-  displayName: 'Tabs',
-  _onStoreChange: function() {
-    this.forceUpdate();
-  },
-  componentDidMount: function() {
-    worldStore.on('change', this._onStoreChange);
-  },
-  componentWillUnmount: function() {
-    worldStore.off('change', this._onStoreChange);
-  },
-  _makeTabChangeHandler: function(tabName) {
-    var self = this;
-    return function() {
-      Dispatcher.sendAction('CHANGE_TAB', tabName);
-    };
-  },
-  render: function() {
-    return el.ul(
-      {className: 'nav nav-tabs'},
-      el.li(
-        {className: worldStore.state.currTab === 'ALL_BETS' ? 'active' : ''},
-        el.a(
-          {
-            href: 'javascript:void(0)',
-            onClick: this._makeTabChangeHandler('ALL_BETS')
-          },
-          'All Bets'
-        )
-      ),
-      // Only show MY BETS tab if user is logged in
-      !worldStore.state.user ? '' :
-        el.li(
-          {className: worldStore.state.currTab === 'MY_BETS' ? 'active' : ''},
-          el.a(
-            {
-              href: 'javascript:void(0)',
-              onClick: this._makeTabChangeHandler('MY_BETS')
-            },
-            'My Bets'
-          )
-        ),
-      // Display faucet tab even to guests so that they're aware that
-      // this casino has one.
-      !config.recaptcha_sitekey ? '' :
-        el.li(
-          {className: worldStore.state.currTab === 'FAUCET' ? 'active' : ''},
-          el.a(
-            {
-              href: 'javascript:void(0)',
-              onClick: this._makeTabChangeHandler('FAUCET')
-            },
-            el.span(null, 'Faucet ')
-          )
-        )
-    );
-  }
-});
-
-var MyBetsTabContent = React.createClass({
-  displayName: 'MyBetsTabContent',
-  _onStoreChange: function() {
-    this.forceUpdate();
-  },
-  componentDidMount: function() {
-    worldStore.on('change', this._onStoreChange);
-  },
-  componentWillUnmount: function() {
-    worldStore.off('change', this._onStoreChange);
-  },
-  render: function() {
-    return el.div(
-      null,
-      el.table(
-        {className: 'table'},
-        el.thead(
-          null,
-          el.tr(
-            null,
-            el.th(null, 'ID'),
-            el.th(null, 'Time'),
-            el.th(null, 'User'),
-            el.th(null, 'Wager'),
-            el.th(null, 'Target'),
-            el.th(null, 'Roll'),
-            el.th(null, 'Profit')
-          )
-        ),
-        el.tbody(
-          null,
-          worldStore.state.bets.toArray().map(function(bet) {
-            return el.tr(
-              {
-                key: bet.bet_id || bet.id
-              },
-              // bet id
-              el.td(
-                null,
-                el.a(
-                  {
-                    href: config.mp_browser_uri + '/bets/' + (bet.bet_id || bet.id),
-                    target: '_blank'
-                  },
-                  bet.bet_id || bet.id
-                )
-              ),
-              // Time
-              el.td(
-                null,
-                helpers.formatDateToTime(bet.created_at)
-              ),
-              // User
-              el.td(
-                null,
-                el.a(
-                  {
-                    href: config.mp_browser_uri + '/users/' + bet.uname,
-                    target: '_blank'
-                  },
-                  bet.uname
-                )
-              ),
-              // wager
-              el.td(
-                null,
-                helpers.round10(bet.wager/100, -2),
-                ' bits'
-              ),
-              // target
-              el.td(
-                null,
-                bet.meta.cond + ' ' + bet.meta.number.toFixed(2)
-              ),
-              // roll
-              el.td(
-                null,
-                bet.outcome + ' ',
-                bet.meta.isFair ?
-                  el.span(
-                    {className: 'label label-success'}, 'Verified') : ''
-              ),
-              // profit
-              el.td(
-                {style: {color: bet.profit > 0 ? 'green' : 'red'}},
-                bet.profit > 0 ?
-                  '+' + helpers.round10(bet.profit/100, -2) :
-                  helpers.round10(bet.profit/100, -2),
-                ' bits'
-              )
-            );
-          }).reverse()
-        )
-      )
-    );
+	  el.div(
+	  {className: 'y'},
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "2.0")},
+	  '2'
+	  )),
+	  el.div(
+	  {className: 'y'},
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "4.0")},
+	  '4x'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "8.0")},
+	  '8x'
+	  )),
+	  el.div(
+	  {className: 'y'},
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "16.0")},
+	  '16'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "32.0")},
+	  '32'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "64.0")},
+	  '64'
+	  )),
+	  el.div(
+	  {className: 'y'},
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "128.0")},
+	  '128'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "256.0")},
+	  '256'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "512.0")},
+	  '512'
+	  ),
+	  el.div(
+	  {className: 'z',
+	  onClick: this._makeBetHandler('>', "1024.0")},
+	  '1024'
+	  ))));
   }
 });
 
@@ -1783,7 +1461,8 @@ var Footer = React.createClass({
       'Powered by ',
       el.a(
         {
-          href: 'https://www.moneypot.com'
+            href: config.mp_browser_uri + '/apps/' + config.app_id,
+            target: '_blank'
         },
         'Moneypot'
       )
@@ -1795,30 +1474,28 @@ var App = React.createClass({
   displayName: 'App',
   render: function() {
     return el.div(
-      {className: 'container'},
-      // Navbar
-      React.createElement(Navbar, null),
+	{className: 'x'},
+
+	el.div(null, React.createElement(Navbar, null)),
       // BetBox & ChatBox
       el.div(
-        {className: 'row'},
+        {},
         el.div(
-          {className: 'col-sm-5'},
+          {},
           React.createElement(BetBox, null)
-        ),
+        )
+
+      ),
+      el.div(
+        {},
         el.div(
-          {className: 'col-sm-7'},
+          {},
           React.createElement(ChatBox, null)
         )
-      ),
-      // Tabs
-      el.div(
-        {style: {marginTop: '15px'}},
-        React.createElement(Tabs, null)
-      ),
-      // Tab Contents
-      React.createElement(TabContent, null),
+
+      )
       // Footer
-      React.createElement(Footer, null)
+
     );
   }
 });

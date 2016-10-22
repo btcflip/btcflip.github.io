@@ -10,12 +10,37 @@ body {
   /* background-color: #f1c40f; */
 }
 
+* {
+  font-family: verdana;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.x {
+  margin: 0 auto;
+  width: 500px;
+  height: 250px;
+}
+
 .y {
   text-align: center;
+  width: 500px;
+  height: 50px;
+}
+
+#ya {
+  text-align: left;
+  line-height: 50px;
+  border-bottom: 1px solid #eee;
+  transition: all .25s;
+}
+
+#ya:hover {
+  margin: 0 0 0 50px;
 }
 
 .z {
-  cursor: pointer;
   display: inline-block;
   text-align: center;
   line-height: 50px;
@@ -24,8 +49,48 @@ body {
   transition: all .25s;
 }
 
-.z:hover {
-  border-radius: 50px;
-  box-shadow: inset 0 0 0 5px #ccc;
-  background: #eee;
+.z:hover:not(#za) {
+  box-shadow: inset 100px 50px #ccc;
+}
+
+a {
+  text-decoration: none;
+  border-bottom: 1px solid #aaa;
+  color: #000;
+  transition: all .25s;
+}
+
+a:hover {
+  color: #aaa;
+}
+
+input {
+  outline: 0;
+  border-bottom: 1px solid #aaa;
+  border: 0;
+  width: 500px;
+  height: 50px;
+}
+
+::-webkit-input-placeholder {
+  color: #aaa;
+}
+
+.yaha {
+  text-align: left;
+  line-height: 50px;
+  border-bottom: 1px solid #eee;
+  transition: all .25s;
+  width: 500px;
+  height: 50px;
+}
+.yahah {
+  text-align: left;
+  line-height: 50px;
+  border-bottom: 1px solid #eee;
+  transition: all .25s;
+  width: 500px;
+  height: 50px;
+  background: #F5F5F5;
+  
 }
