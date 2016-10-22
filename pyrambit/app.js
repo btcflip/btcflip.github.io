@@ -1053,7 +1053,23 @@ var ChatBox = React.createClass({
           {className: 'panel-footer'},
           React.createElement(ChatBoxInput, null)
         )
-      )
+      ),
+      // After the chatbox panel
+      el.p(
+        {
+          className: 'text-right text-muted',
+          style: { marginTop: '-15px' }
+        },
+        'Users online: ' + Object.keys(chatStore.state.userList).length + ' ',
+        // Show/Hide userlist button
+        el.button(
+          {
+            className: 'btn btn-default btn-xs',
+            onClick: this._onUserListToggle
+          },
+          chatStore.state.showUserList ? 'Hide' : 'Show'
+        )
+      ),
       // Show userlist
       chatStore.state.showUserList ? React.createElement(ChatUserList, null) : ''
     );
