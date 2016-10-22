@@ -1577,7 +1577,16 @@ var Tabs = React.createClass({
   render: function() {
     return el.ul(
       {className: 'nav nav-tabs'},
-
+      el.li(
+        {className: worldStore.state.currTab === 'ALL_BETS' ? 'active' : ''},
+        el.a(
+          {
+            href: 'javascript:void(0)',
+            onClick: this._makeTabChangeHandler('ALL_BETS')
+          },
+          'All Bets'
+        )
+      ),
       // Only show MY BETS tab if user is logged in
       !worldStore.state.user ? '' :
         el.li(
