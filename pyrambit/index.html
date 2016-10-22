@@ -1,12 +1,22 @@
 <!doctype html>
+<script>
+function openNav() {
+    document.getElementById("ppSidenav").style.width = "250px";
+}
+
+function closeNav() {
+    document.getElementById("ppSidenav").style.width = "0";
+}
+</script>
 <head>
-  <title>Untitled Dice</title>
+  <title>Pyrambit</title>
   <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
   <link href="custom.css" rel="stylesheet"> <!-- Recommendation: Put your CSS customizations in custom.css -->
 </head>
-<body>
+<body onload="openNav();">
+<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
   <div id="app"></div>
   <script src="node_modules/react/dist/react.js"></script>
   <script src="node_modules/jquery/dist/jquery.min.js"></script>

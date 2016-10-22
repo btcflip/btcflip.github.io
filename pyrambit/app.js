@@ -86,9 +86,17 @@ helpers.formatDateToTime = function(dateJson) {
 helpers.multiplierToWinProb = function(multiplier) {
   console.assert(typeof multiplier === 'number');
   console.assert(multiplier > 0);
-
+  var n;
+  if(multiplier == 1024.0)
+  {
+	 n = 1.0 - 0.15;
+	  
+  }
+  else {
+	  n = 1.0 - config.house_edge;
+	  
+  }
   // For example, n is 0.99 when house edge is 1%
-  var n = 1.0 - config.house_edge;
 
   return n / multiplier;
 };
@@ -664,6 +672,12 @@ var UserBox = React.createClass({
     windowRef.focus();
     return false;
   },
+  _faucet: function() {
+	document.getElementById("faucetcaptcha").style = "visiblity:shown;"
+	  
+	  
+  },
+
   _openDepositPopup: function() {
     var windowUrl = config.mp_browser_uri + '/dialog/deposit?app_id=' + config.app_id;
     var windowName = 'manage-auth';
@@ -689,11 +703,18 @@ var UserBox = React.createClass({
       innerNode = el.div(
         null,
 		el.div(
+		{}
+		),
+			el.div(
+	{className: 'sidenav',
+	id: 'ppSidenav'},
+			el.div(
 		{},
 		el.div(
-		{className: 'y'},
+		{},
 		el.div(
-		{className: 'z'},
+		
+		{},
 		          (worldStore.state.user.balance / 100) + ' bits',
           !worldStore.state.user.unconfirmed_balance ?
            '' :
@@ -704,24 +725,33 @@ var UserBox = React.createClass({
 		
 		),
 		el.div(
-		{className: 'z',
+		{
 		onClick: this._openDepositPopup},
 		'Deposit'
 		),
 		el.div(
-		{className: 'z',
+		{
 		onClick: this._openWithdrawPopup},
 		'Withdraw'
 		),
 		el.div(
-		{className: 'z'},
+		{onClick: this._faucet},
 		'Faucet'
 		),
-		el.a(
-		{onClick: this._onLogout,
-		className: 'z'},
+		el.div(
+		{onClick: this._onLogout
+		},
 		'Logout'
-		))));
+		),
+		el.div(
+		{className: 'faucetcss',
+		id: 'faucetcaptcha',
+		style: {visibility: 'hidden'}},
+		React.createElement(FaucetTabContent, null)
+		)
+		)))
+	
+	);
     } else {
       // User needs to login
       innerNode = el.a(
@@ -736,6 +766,121 @@ var UserBox = React.createClass({
 
     return el.div(
       {className: 'navbar-right'},
+      innerNode
+    );
+  }
+});
+
+var FaucetTabContent = React.createClass({
+  displayName: 'FaucetTabContent',
+  getInitialState: function() {
+    return {
+      // SHOW_RECAPTCHA | SUCCESSFULLY_CLAIM | ALREADY_CLAIMED | WAITING_FOR_SERVER
+      faucetState: 'SHOW_RECAPTCHA',
+      // :: Integer that's updated after the claim from the server so we
+      // can show user how much the claim was worth without hardcoding it
+      // - It will be in satoshis
+      claimAmount: undefined
+    };
+  },
+  // This function is extracted so that we can call it on update and mount
+  // when the window.grecaptcha instance loads
+  _renderRecaptcha: function() {
+    worldStore.state.grecaptcha.render(
+      'recaptcha-target',
+      {
+        sitekey: config.recaptcha_sitekey,
+        callback: this._onRecaptchaSubmit
+      }
+    );
+  },
+  // `response` is the g-recaptcha-response returned from google
+  _onRecaptchaSubmit: function(response) {
+    var self = this;
+    console.log('recaptcha submitted: ', response);
+
+    self.setState({ faucetState: 'WAITING_FOR_SERVER' });
+
+    MoneyPot.claimFaucet(response, {
+      // `data` is { claim_id: Int, amount: Satoshis }
+      success: function(data) {
+        Dispatcher.sendAction('UPDATE_USER', {
+          balance: worldStore.state.user.balance + data.amount
+        });
+        self.setState({
+          faucetState: 'SUCCESSFULLY_CLAIMED',
+          claimAmount: data.amount
+        });
+        // self.props.faucetClaimedAt.update(function() {
+        //   return new Date();
+        // });
+      },
+      error: function(xhr, textStatus, errorThrown) {
+        if (xhr.responseJSON && xhr.responseJSON.error === 'FAUCET_ALREADY_CLAIMED') {
+          self.setState({ faucetState: 'ALREADY_CLAIMED' });
+        }
+      }
+    });
+  },
+  // This component will mount before window.grecaptcha is loaded if user
+  // clicks the Faucet tab before the recaptcha.js script loads, so don't assume
+  // we have a grecaptcha instance
+  componentDidMount: function() {
+    if (worldStore.state.grecaptcha) {
+      this._renderRecaptcha();
+    }
+
+    worldStore.on('grecaptcha_loaded', this._renderRecaptcha);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('grecaptcha_loaded', this._renderRecaptcha);
+  },
+  render: function() {
+
+    // If user is not logged in, let them know only logged-in users can claim
+    if (!worldStore.state.user) {
+      return el.p(
+        {className: 'lead'},
+        'You must login to claim faucet'
+      );
+    }
+
+    var innerNode;
+    // SHOW_RECAPTCHA | SUCCESSFULLY_CLAIMED | ALREADY_CLAIMED | WAITING_FOR_SERVER
+    switch(this.state.faucetState) {
+    case 'SHOW_RECAPTCHA':
+      innerNode = el.div(
+        { id: 'recaptcha-target' },
+        !!worldStore.state.grecaptcha ? '' : 'Loading...'
+      );
+      break;
+    case 'SUCCESSFULLY_CLAIMED':
+      innerNode = el.div(
+        null,
+        'Successfully claimed ' + this.state.claimAmount/100 + ' bits.' +
+          // TODO: What's the real interval?
+          ' You can claim again in 5 minutes.'
+      );
+      break;
+    case 'ALREADY_CLAIMED':
+      innerNode = el.div(
+        null,
+        'ALREADY_CLAIMED'
+      );
+      break;
+    case 'WAITING_FOR_SERVER':
+      innerNode = el.div(
+        null,
+        'WAITING_FOR_SERVER'
+      );
+      break;
+    default:
+      alert('Unhandled faucet state');
+      return;
+    }
+
+    return el.div(
+      null,
       innerNode
     );
   }
