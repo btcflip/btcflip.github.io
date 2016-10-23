@@ -10,7 +10,7 @@ var config = {
   // - For your faucet to work, you must register your site at Recaptcha
   // - https://www.google.com/recaptcha/intro/index.html
   recaptcha_sitekey: '6LdKBAoUAAAAAPmii6hkBFMX1eQZ87rqcldXaK2q',  // <----- EDIT ME!
-  redirect_uri: 'https://bitsino.xyz/pyrambit',
+  redirect_uri: 'http://bitsino.xyz/pyrambit',
   mp_browser_uri: 'https://www.moneypot.com',
   mp_api_uri: 'https://api.moneypot.com',
   chat_uri: 'https://socket.moneypot.com',
@@ -90,11 +90,11 @@ helpers.multiplierToWinProb = function(multiplier) {
   if(multiplier == 1024.0)
   {
 	 n = 1.0 - 0.15;
-	  
+
   }
   else {
 	  n = 1.0 - config.house_edge;
-	  
+
   }
   // For example, n is 0.99 when house edge is 1%
 
@@ -674,8 +674,8 @@ var UserBox = React.createClass({
   },
   _faucet: function() {
 	//document.getElementById("faucetcaptcha").style = "visiblity:shown;"
-	alert("Faucet is broken for now."); 
-	  
+	alert("Faucet is broken for now.");
+
   },
 
   _openDepositPopup: function() {
@@ -713,7 +713,7 @@ var UserBox = React.createClass({
 		el.div(
 		{},
 		el.div(
-		
+
 		{},
 		          (worldStore.state.user.balance / 100) + ' bits',
           !worldStore.state.user.unconfirmed_balance ?
@@ -722,7 +722,7 @@ var UserBox = React.createClass({
              {style: { color: '#e67e22'}},
              ' + ' + (worldStore.state.user.unconfirmed_balance / 100) + ' bits pending'
            )
-		
+
 		),
 		el.div(
 		{
@@ -740,7 +740,7 @@ var UserBox = React.createClass({
 		'Logout'
 		)
 		)))
-	
+
 	);
     } else {
       // User needs to login
@@ -1082,8 +1082,8 @@ var ChatBox = React.createClass({
 
 var BetBox = React.createClass({
   displayName: 'BetBox',
-  
-  
+
+
   _onStoreChange: function() {
     this.forceUpdate();
   },
@@ -1172,8 +1172,8 @@ var BetBox = React.createClass({
   render: function() {
     return el.div(
 	null,
-	
-		
+
+
 	el.div(
       null,
 
