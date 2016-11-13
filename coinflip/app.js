@@ -2467,7 +2467,6 @@ var MyBetsTabContent = React.createClass({
             el.th(null, 'Time'),
             el.th(null, 'User'),
             el.th(null, 'Wager'),
-            el.th(null, 'Target'),
             el.th(null, 'Roll'),
             el.th(null, 'Profit')
           )
