@@ -9,7 +9,7 @@ var config = {
   app_name: 'Bitsino - Dice',
   // - For your faucet to work, you must register your site at Recaptcha
   // - https://www.google.com/recaptcha/intro/index.html
-  recaptcha_sitekey: '6LdKBAoUAAAAAPmii6hkBFMX1eQZ87rqcldXaK2q',  // <----- EDIT ME!
+  recaptcha_sitekey: '6LempwoUAAAAAFt-1xHrOrQFZs-nZbWaJhYtvBc9',  // <----- EDIT ME!
   redirect_uri: 'http://bitsino.xyz/dice',
   mp_browser_uri: 'https://www.moneypot.com',
   mp_api_uri: 'https://api.moneypot.com',
@@ -687,9 +687,9 @@ function correctCaptcha(a) {
     })
 }
 
-function addNewChatMessage(date, text)
+function addNewChatMessage(text)
 {
-	alert(text);
+	alert(text.text);
 }
 ////////////////////////////////////////////////////////////
 Number.prototype.formatMoney = function(c, d, t){
@@ -723,7 +723,7 @@ var UserBox = React.createClass({
   _openFaucet: function() {
 	  
     grecaptcha.render("faucetClaimCaptcha", {
-        sitekey: "6LdKBAoUAAAAAPmii6hkBFMX1eQZ87rqcldXaK2q",
+        sitekey: "6LempwoUAAAAAFt-1xHrOrQFZs-nZbWaJhYtvBc9",
         callback: correctCaptcha
     });
 	document.getElementById("faucetClaimCaptcha").style = "position: absolute; left: 40%; top: 30px;";
