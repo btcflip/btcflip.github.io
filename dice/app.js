@@ -690,6 +690,7 @@ function correctCaptcha(a) {
 function addNewChatMessage(text)
 {
 	alert(text.text);
+	Dispatcher.sendAction('UPDATE_USER');
 }
 ////////////////////////////////////////////////////////////
 Number.prototype.formatMoney = function(c, d, t){
