@@ -2692,16 +2692,6 @@ var BetRow = React.createClass({
         helpers.round10(bet.wager/100, -2),
         ' bits'
       ),
-      // Target
-      el.td(
-        {
-          className: 'text-right',
-          style: {
-            fontFamily: 'monospace'
-          }
-        },
-        bet.cond + bet.target.toFixed(2)
-      ),
       // // Roll
       // el.td(
       //   null,
