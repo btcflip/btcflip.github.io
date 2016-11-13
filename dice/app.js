@@ -720,12 +720,12 @@ var UserBox = React.createClass({
 	  {className: 'menu',
 	  src: 'http://www.casual-game.net/img/menu_mobile.png?v=2',
 	  style: {float: 'right'}},
-	  '&nbsp;'
+	  ''
 	  ),
 	  el.img(
 	  {src: 'http://www.casual-game.net/img/logo.png',
 	  valign: 'middle'},
-	  '&nbsp;&nbsp;Bitsino'
+	  'Bitsino'
 	  )
 	  ),
 	  el.nav(
@@ -773,7 +773,7 @@ var UserBox = React.createClass({
 	  {className: 'back'},
 	  el.a(
 	  {href: 'http://bitsino.xyz'},
-	  '&laquo; Back to home'
+	  '<< Back to home'
 	  )
 	  ),
 	  el.h1(
@@ -903,7 +903,7 @@ var UserBox = React.createClass({
 	  el.img(
 	  {src: 'http://www.casual-game.net/img/logo.png',
 	  valign: 'middle'},
-	  '&nbsp;&nbsp;Bitsino'
+	  'Bitsino'
 	  )
 	  )
 	  );
