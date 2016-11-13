@@ -645,6 +645,52 @@ var worldStore = new Store('world', {
 
 });
 
+function correctCaptcha(a) {
+    $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        url: "https://api.moneypot.com/v1/claim-faucet?access_token=" + access_token,
+        data: JSON.stringify({
+            response: a
+        }),
+        dataType: "json"
+    }).done(function(a) {
+        return "undefined" != typeof a.error ? "FAUCET_ALREADY_CLAIMED" == a.error ? (console.error("Faucet already claimed"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "You already claimed the faucet. (All moneypot apps shares the same faucet and therefore the same timer)"
+        }), void grecaptcha.reset()) : "INVALID_INPUT_RESPONSE" == a.error ? (console.error("Google has rejected the response. Try to refresh and do again."), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) Google has rejected the response. Try to refresh and do again."
+        }), void grecaptcha.reset()) : (console.error(a.error), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) An error occured. Be sure you haven't already claimed a moneypot app's faucet within 5 mins."
+        }), void grecaptcha.reset()) : (console.log(a.amount / 100 + " bits has been added to your balance!"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: a.amount / 100 + " bits has been added to your balance!"
+        }), $.get("https://api.moneypot.com/v1/auth?access_token=" + access_token, function(a) {
+            "undefined" != typeof a.user.uname && (user_balance = a.user.balance / 100, $("#balance").text(user_balance.formatMoney(2, ".", ",")))
+        }), $("#faucetClaimCaptcha").css("top", "-90px"), grecaptcha.reset(), showingrecaptcha = !1, claimedTime = (new Date).getTime(), faucetTimer = setInterval(function() {
+            return parseInt(claimedTime) + 3e5 <= (new Date).getTime() ? ($("#faucetButton").removeClass("claimed"), clearInterval(faucetTimer), claimedTime = !1, $("#faucetButton").attr("disabled", !1), void $("#faucetButton").text("FAUCET")) : ($("#faucetButton").attr("disabled", !0), $("#faucetButton").addClass("claimed"), $("#faucetButton").text(parseFloat(300 - ((new Date).getTime() - claimedTime) / 1e3).formatMoney(2, ".", ",")), void 0)
+        }, 100), "undefined" != $.cookie("faucetClaim") && $.removeCookie("faucetClaim"), void $.cookie("faucetClaim", claimedTime))
+    }).fail(function(a) {
+        var b = a.error;
+        "FAUCET_ALREADY_CLAIMED" == b ? (console.error("Faucet already claimed"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "You already claimed the faucet. (All moneypot apps shares the same faucet and therefore the same timer)"
+        }), grecaptcha.reset()) : "INVALID_INPUT_RESPONSE" == b ? (console.error("Google has rejected the response. Try to refresh and do again."), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) Google has rejected the response. Try to refresh and do again."
+        }), grecaptcha.reset()) : (console.error(b), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) An error occured. Be sure you haven't already claimed a moneypot app's faucet within 5 mins."
+        }), grecaptcha.reset()), $("#faucetClaimCaptcha").css("top", "-90px"), showingrecaptcha = !1
+    })
+}
+
+function addNewChatMessage(date, text)
+{
+	alert(text);
+}
 ////////////////////////////////////////////////////////////
 Number.prototype.formatMoney = function(c, d, t){
 var n = this, 
@@ -673,6 +719,15 @@ var UserBox = React.createClass({
   },
   _onLogout: function() {
     Dispatcher.sendAction('USER_LOGOUT');
+  },
+  _openFaucet: function() {
+	  
+    grecaptcha.render("faucetClaimCaptcha", {
+        sitekey: "6LempwoUAAAAAFt-1xHrOrQFZs-nZbWaJhYtvBc9",
+        callback: correctCaptcha
+    });
+	document.getElementById("faucetClaimCaptcha").style = "position: absolute; left: 40%; top: 30px;";
+  
   },
   _onRefreshUser: function() {
     Dispatcher.sendAction('START_REFRESHING_USER');
@@ -799,7 +854,8 @@ var UserBox = React.createClass({
 	  el.button(
 	  {className: 'navbarButtons',
 	  type: 'button',
-	  onClick: this._openWithdrawPopup},
+	  id: 'faucetButton',
+	  onClick: this._openFaucet},
 	  'Faucet'
 	  ),
 	  el.button(
