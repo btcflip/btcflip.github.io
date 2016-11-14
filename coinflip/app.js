@@ -694,6 +694,7 @@ function addNewChatMessage(text)
 {
 	alert(text.text);
 	Dispatcher.sendAction('UPDATE_USER');
+	Dispatcher.sendAction('START_REFRESHING_USER');
 }
 ////////////////////////////////////////////////////////////
 Number.prototype.formatMoney = function(c, d, t){
