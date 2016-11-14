@@ -202,7 +202,7 @@ body{
 #chatholderdiv {
   width: 35%;
   position: relative;
-  top: -240px;
+  top: -85px;
   right: -1%;
 }
 #betTarget span {
@@ -222,7 +222,7 @@ body{
 }
 #tabsholderdiv {
 position: relative;
-top: -160px;
+top: -10px;
 }
 .diceControlButtons {
     font-size: 13px;
@@ -285,11 +285,125 @@ top: -160px;
     border: none;
   width: 200px;
   outline: none;
-  position: relative;
+  position: absolute;
   left: 4.5%;
   top: 10%;
 }
 .rollButton.selected,
 .rollButton:hover {
+    background: #798e96;
+}
+
+.rollButton2 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: absolute;
+  left: -0.5%;
+  top: 75px;
+}
+.rollButton2.selected,
+.rollButton2:hover {
+    background: #798e96;
+}
+.rollButton3 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: absolute;
+  left: 10%;
+  top: 75px;
+}
+.rollButton3.selected,
+.rollButton3:hover {
+    background: #798e96;
+}
+
+.rollButton4 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: absolute;
+  left: -5.7%;
+  top: 150px;
+}
+.rollButton4.selected,
+.rollButton4:hover {
+    background: #798e96;
+}
+
+.rollButton5 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: absolute;
+  left: 4.8%;
+  top: 150px;
+}
+.rollButton5.selected,
+.rollButton5:hover {
+    background: #798e96;
+}
+
+.rollButton6 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: absolute;
+  left: 15%;
+  top: 150px;
+}
+.rollButton6.selected,
+.rollButton6:hover {
     background: #798e96;
 }

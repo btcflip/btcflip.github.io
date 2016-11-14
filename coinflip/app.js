@@ -778,7 +778,7 @@ var UserBox = React.createClass({
 	  {className: 'navlogolol'},
 	  el.img(
 	  {className: 'menu',
-	  src: 'http://www.casual-game.net/img/menu_mobile.png?v=2',
+	  src: '',
 	  style: {float: 'right'}},
 	  ''
 	  ),
@@ -789,7 +789,7 @@ var UserBox = React.createClass({
 	  )
 	  ),
 	  el.nav(
-	  {id: 'navkekek'},
+	  {},
 	  el.ul(
 	  {},
 	  el.li(
@@ -2683,6 +2683,16 @@ var BetRow = React.createClass({
         helpers.round10(bet.wager/100, -2),
         ' bits'
       ),
+      // Target
+      el.td(
+        {
+          className: 'text-right',
+          style: {
+            fontFamily: 'monospace'
+          }
+        },
+        bet.cond + bet.target.toFixed(2)
+      ),
       // // Roll
       // el.td(
       //   null,
@@ -2696,6 +2706,44 @@ var BetRow = React.createClass({
             fontFamily: 'monospace'
           }
         },
+        // progress bar container
+        el.div(
+          {
+            className: 'progress',
+            style: {
+              minWidth: '100px',
+              position: 'relative',
+              marginBottom: 0,
+              // make it thinner than default prog bar
+              height: '10px'
+            }
+          },
+          el.div(
+            {
+              className: 'progress-bar ' +
+                (bet.profit >= 0 ?
+                 'progress-bar-success' : 'progress-bar-grey') ,
+              style: {
+                float: bet.cond === '<' ? 'left' : 'right',
+                width: bet.cond === '<' ?
+                  bet.target.toString() + '%' :
+                  (100 - bet.target).toString() + '%'
+              }
+            }
+          ),
+          el.div(
+            {
+              style: {
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: bet.outcome.toString() + '%',
+                borderRight: '3px solid #333',
+                height: '100%'
+              }
+            }
+          )
+        ),
         // arrow container
         el.div(
           {
@@ -2774,6 +2822,8 @@ var AllBetsTabContent = React.createClass({
             el.th(null, 'Time'),
             el.th(null, 'User'),
             el.th(null, 'Wager'),
+            // el.th(null, 'Roll'),
+            el.th(null, 'Outcome'),
             el.th(
               {
                 style: {
