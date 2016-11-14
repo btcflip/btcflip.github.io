@@ -786,7 +786,7 @@ var UserBox = React.createClass({
 	  )
 	  ),
 	  el.nav(
-	  {},
+	  {id: 'navkekek'},
 	  el.ul(
 	  {},
 	  el.li(
@@ -1769,7 +1769,8 @@ var BetBox = React.createClass({
   },
   _makeBetHandler: function(cond) {
     var self = this;
-
+if(document.getElementById("betTargetSpan").innerHTML == "HI") { cond = ">"; }
+if(document.getElementById("betTargetSpan").innerHTML == "LO") { cond = "<"; }
     console.assert(cond === '<' || cond === '>');
 
     return function(e) {

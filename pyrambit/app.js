@@ -789,7 +789,7 @@ var UserBox = React.createClass({
 	  )
 	  ),
 	  el.nav(
-	  {},
+	  {id: 'navkekek'},
 	  el.ul(
 	  {},
 	  el.li(
