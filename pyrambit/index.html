@@ -33,6 +33,22 @@ console.log("klik")
 $(".menu").click(function(){
     $("#navkekek").slideToggle(200);
   });
+  $(window).resize(function() {
+    resizeSite();
+});
+
+function resizeSite(){
+    var winH = $(window).height();
+    var winW = $(window).width();
+    // you will want to do some stuff here for deciding what to do and when...
+    // when the window size is too small shrink the site using your ratio
+    // when the window is larger increase the size of your site i.e.
+    // Height = Width / 2
+    // Width = Height * 2
+    var tgtW =  winH * ratio;
+    var tgtW =  winH * ratio;
+    $("#app").height(tgtH).width(tgtW);
+}
 </script>
 <div id="faucetClaimCaptcha" style="top: -90px;"></div>
 </body>
