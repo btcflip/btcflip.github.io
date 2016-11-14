@@ -1,149 +1,341 @@
-/* 
-    Put your style/CSS customizations here.
-    It's loaded after all the other CSS files, so any CSS rules here
-    will override rules in other files.
- */
-
-/* The following example turns the background to yellow if you uncomment it. */
+*{
+    font-family:'Open Sans';
+    margin:0;
+    padding:0;
+  color:#222;
+}
 
 body {
-  /* background-color: #f1c40f; */
+  position: relative;
+  top: -20px;
 }
 
-* {
-  font-family: verdana;
-  font-size: 16px;
-  margin: 0;
-  padding: 0;
+.navlogolol {
+  text-align:left;
+  padding:10px;
+  background-color:#111;
+  color:#9c5837;
+  font-size:30pt;
+}
+h1,h2{
+  font-family:'Open Sans';
+  font-weight:normal;
+}
+h1{
+  padding:10px;
+  margin:0;
+  color:#fff;
+  background-color:#232323;
+}
+.usersbalance{
+  padding:10px;
+  margin:0;
+  color:#fff;
+  background-color:#232323;
+  width: 100%;
+}
+.usersbalance #balancekek{
+  position: relative;
+  left: 85%;
+  top: 40%;
+  color:white;
+}
+#navButtons {
+  position: relative;
+  left: 68%;
+}
+h2{
+  padding:10px;
+  margin:0;
+  color:#111;
+  background-color:#ccc;
+}
+p{
+  padding:10px;
+}
+nav{
+  display:none;
+  background-color:#232323;
+  color:#fff;
+  padding:5px;
+}
+nav ul li{
+  list-style-type:none;
+}
+nav ul li a{
+  display:block;
+  background-color:#373737;
+  padding:10px;
+  margin-bottom:5px;
+  color:#fff;
+  text-decoration:none;
+}
+nav ul li a:hover{
+  background-color:#d00;
+}
+nav ul li:last-child a{
+  margin-bottom:0;
+}
+.menu{
+  cursor:pointer;
+}
+body{
+  background-color:#ddd;
+}
+.back{
+
+}
+.back a{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+  padding:10px;
+  font-weight:bold;
+  font-size:16pt;
+    background-color:#000;
+}
+.back a:hover{
+    background-color:#9c5837;
 }
 
-.x {
-  margin: 0 auto;
-  width: 500px;
-  height: 300px;
+.betControl {
+  position: relative;
+  left: 42.5%;
 }
 
-.y {
-  text-align: center;
-  width: 500px;
-  height: 50px;
+#betSize {
+    font-size: 24px;
+    padding: 0 0 0 20px;
+    color: #474c6c;
+    background: #F2F4F8;
+    flex-grow: 1;
+    text-align: center;
+    width: 10%;
+    height: 50px;
+  outline: none;
+  border: none;
+  position: relative;
+  top: 100%;
+  right: -3px;
 }
+.labelmultiplier {
+    position: relative;
+  right: -5%;
+  top: -85%;
+  z-index: -1;
+}
+.labelchance {
+    position: relative;
+  right: -10%;
+  top: -170%;
+}
+#betinfo {
+  position: relative;
+  left: 2.5%;
+}
+#betMultiplier {
+      font-size: 25px;
+    padding: 0 0 0 20px;
+    color: #474c6c;
+    background: #F2F4F8;
+    flex-grow: 1;
+ 
+    width: 4.5%;
+    height: 50px;
+  outline: none;
+  border: none;
+  position: relative;
+  right: -3px;
 
-#ya {
+    margin-right: 322px;
+  position: relative;
   text-align: left;
-  line-height: 50px;
-  border-bottom: 1px solid #eee;
-  transition: all .25s;
+  right: -5%;
+  top: -89px;
 }
-
-#ya:hover {
-  margin: 0 0 0 50px;
+#betChance {
+      font-size: 15px;
+    padding: 0 0 0 20px;
+    color: #474c6c;
+    background: #F2F4F8;
+    flex-grow: 1;
+ 
+    width: 4.5%;
+    height: 50px;
+  outline: none;
+  border: none;
+  position: relative;
+  right: -3px;
+    margin-right: 322px;
+  position: relative;
+  right: -10%;
+  top: -175%;
+  
 }
-
-.z {
-  display: inline-block;
-  text-align: center;
-  line-height: 50px;
-  width: 100px;
-  height: 50px;
-  transition: all .25s;
+#betChanceSpan {
+  color: #474c6c;
+  position: relative;
+  top: 15%;
+  right: 30%;
+  font-size: 25px;
 }
-
-.z:hover:not(#za) {
-  box-shadow: inset 100px 50px #ccc;
+#betTarget {
+    padding: 0 0 0 20px;
+    color: #474c6c;
+    background: #F2F4F8;
+    flex-grow: 1;
+ 
+    width: 4.5%;
+    height: 50px;
+  outline: none;
+  border: none;
+  position: relative;
+    
+  top: -4%;
+ 
 }
-
-a {
-  text-decoration: none;
-  border-bottom: 1px solid #aaa;
-  color: #000;
-  transition: all .25s;
-}
-
-a:hover {
-  color: #aaa;
-}
-
-input {
-  outline: 0;
-  border-bottom: 1px solid #aaa;
-  border: 0;
-  width: 500px;
-  height: 50px;
-}
-
-::-webkit-input-placeholder {
-  color: #aaa;
-}
-
-.yaha {
-  text-align: left;
-  line-height: 50px;
-  border-bottom: 1px solid #eee;
-  transition: all .25s;
-  width: 500px;
-  height: 50px;
-}
-.yahah {
-  text-align: left;
-  line-height: 50px;
-  border-bottom: 1px solid #eee;
-  transition: all .25s;
-  width: 500px;
-  height: 50px;
-  background: #F5F5F5;
+#betTarget:hover {
+  cursor: pointer;
   
 }
 
-/* The side navigation menu */
-.sidenav {
-    height: 100%; /* 100% Full-height */
-    width: 0; /* 0 width - change this with JavaScript */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Stay on top */
-    top: 0;
-    left: 0;
-    background-color: #111; /* Black*/
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 60px; /* Place content 60px from the top */
-    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+#chatholderdiv {
+  width: 35%;
+  position: relative;
+  top: -150px;
+  right: -1%;
+}
+#betTarget span {
+  position: relative;
+  font-size: 25px;
+  color: #474c6c;
+  right: -15%;
+  top: 18%;
+}
+.dice_label {
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    margin: 7px 0;
+    text-transform: uppercase;
+    color: #849BA4;
+}
+#tabsholderdiv {
+position: relative;
+top: -160px;
+}
+.diceControlButtons {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    width: 50px;
+    border: none;
+  outline: none;
+  position: relative;
+  left: 0.2%;
+  top: -3px;
+}
+.diceControlButtons.selected,
+.diceControlButtons:hover {
+    background: #798e96;
+}
+.diceControlButtons[disabled] {
+    color: rgba(87, 106, 145, .4)
 }
 
-/* The navigation menu links */
-.sidenav div {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s
+.navbarButtons {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 100px;
+  outline: none;
+}
+.navbarButtons.selected,
+.navbarButtons:hover {
+    background: #798e96;
 }
 
-/* Position and style the close button (top right corner) */
-.sidenav .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
+
+.rollButton {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: relative;
+  left: 4.5%;
+  top: 10%;
+}
+.rollButton.selected,
+.rollButton:hover {
+    background: #798e96;
 }
 
-/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
-#main {
-    transition: margin-left .5s;
-    padding: 20px;
+.rollButton2 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: relative;
+  left: -11.4%;
+  top: 75px;
+}
+.rollButton2.selected,
+.rollButton2:hover {
+    background: #798e96;
 }
 
-/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
-@media screen and (max-height: 450px) {
-    .sidenav {padding-top: 15px;}
-    .sidenav div {font-size: 18px;}
+.rollButton3 {
+    font-size: 30px;
+    font-weight: 500;
+    padding: 17px 0;
+    transition: all .2s;
+    text-transform: uppercase;
+    color: #fff;
+    border-right: 1px solid #819ecd;
+    background: #849BA4;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1);
+    flex-grow: 1;
+    border: none;
+  width: 200px;
+  outline: none;
+  position: relative;
+  left: -37.5%;
+  top: 150px;
 }
-
-.faucetcss {
-	position: absolute;
-	margin: -230px;
-	margin-top: 10px;
-	
-	
+.rollButton3.selected,
+.rollButton3:hover {
+    background: #798e96;
 }

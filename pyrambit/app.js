@@ -4,9 +4,9 @@
 
 var config = {
   // - Your app's id on moneypot.com
-  app_id: 2355,                             // <----------------------------- EDIT ME!
+  app_id: 2404,                             // <----------------------------- EDIT ME!
   // - Displayed in the navbar
-  app_name: 'Pyrambit',
+  app_name: 'Bitsino - Pyramid',
   // - For your faucet to work, you must register your site at Recaptcha
   // - https://www.google.com/recaptcha/intro/index.html
   recaptcha_sitekey: '6LdKBAoUAAAAAPmii6hkBFMX1eQZ87rqcldXaK2q',  // <----- EDIT ME!
@@ -27,6 +27,8 @@ var config = {
   bet_buffer_size: 25
 };
 
+var thegameurl = "pyrambit";
+var indev = false;
 ////////////////////////////////////////////////////////////
 // You shouldn't have to edit anything below this line
 ////////////////////////////////////////////////////////////
@@ -51,6 +53,7 @@ var config = {
 })();
 
 ////////////////////////////////////////////////////////////
+
 
 // Hoist it. It's impl'd at bottom of page.
 var socket;
@@ -86,17 +89,9 @@ helpers.formatDateToTime = function(dateJson) {
 helpers.multiplierToWinProb = function(multiplier) {
   console.assert(typeof multiplier === 'number');
   console.assert(multiplier > 0);
-  var n;
-  if(multiplier == 1024.0)
-  {
-	 n = 1.0 - 0.15;
 
-  }
-  else {
-	  n = 1.0 - config.house_edge;
-
-  }
   // For example, n is 0.99 when house edge is 1%
+  var n = 1.0 - config.house_edge;
 
   return n / multiplier;
 };
@@ -312,7 +307,6 @@ var Dispatcher = new (function() {
 
   this.sendAction = function(actionName, payload) {
     console.log('[Dispatcher] received action:', actionName, payload);
-
     // Ensure this action has 1+ registered callbacks
     if (!self.callbacks[actionName]) {
       throw new Error('Unsupported actionName: ' + actionName);
@@ -322,6 +316,7 @@ var Dispatcher = new (function() {
     self.callbacks[actionName].forEach(function(cb) {
       cb(payload);
     });
+
   };
 });
 
@@ -383,6 +378,14 @@ if (helpers.getHashParams().access_token) {
 }
 
 // Scrub fragment params from url.
+if (window.history && window.history.replaceState) {
+  if(indev === false) { window.history.replaceState({}, document.title, "/"+thegameurl); }
+  if(indev === true) { window.history.replaceState({}, document.title, "/bitsino/"+thegameurl); }
+} else {
+  // For browsers that don't support html5 history api, just do it the old
+  // fashioned way that leaves a trailing '#' in the url
+  window.location.hash = '#';
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -496,26 +499,36 @@ var betStore = new Store('bet', {
     // Ensure wagerString is a number
     if (isNaN(n) || /[^\d]/.test(n.toString())) {
       self.state.wager.error = 'INVALID_WAGER';
+	  wagerkek = "";
+	setTimeout(function(){ document.getElementById("betSize").value = wagerkek; }, 100);
     // Ensure user can afford balance
     } else if (n * 100 > worldStore.state.user.balance) {
       self.state.wager.error = 'CANNOT_AFFORD_WAGER';
       self.state.wager.num = n;
+	  wagerkek = self.state.wager.num;
     } else {
       // wagerString is valid
       self.state.wager.error = null;
       self.state.wager.str = n.toString();
       self.state.wager.num = n;
+	  	//console.log("kek"+wagerkek)
+		wagerkek = self.state.wager.num;
+		setTimeout(function(){ document.getElementById("betSize").value = wagerkek; }, 100);
     }
 
     self.emitter.emit('change', self.state);
+	setTimeout(function(){ document.getElementById("betSize").value = wagerkek; }, 100);
   });
 
   Dispatcher.registerCallback('UPDATE_MULTIPLIER', function(newMult) {
+	var winProb = helpers.multiplierToWinProb(betStore.state.multiplier.num);
+    var isError = betStore.state.multiplier.error || betStore.state.wager.error;
     self.state.multiplier = _.merge({}, self.state.multiplier, newMult);
-    self.emitter.emit('change', self.state);
+    document.getElementById("betChanceSpan").innerHTML = (winProb * 100).toFixed(2).toString();
+	self.emitter.emit('change', self.state);
   });
 });
-
+var wagerkek = 1;
 // The general store that holds all things until they are separated
 // into smaller stores for performance.
 var worldStore = new Store('world', {
@@ -635,15 +648,71 @@ var worldStore = new Store('world', {
 
 });
 
+function correctCaptcha(a) {
+    $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        url: "https://api.moneypot.com/v1/claim-faucet?access_token=" + access_token,
+        data: JSON.stringify({
+            response: a
+        }),
+        dataType: "json"
+    }).done(function(a) {
+        return "undefined" != typeof a.error ? "FAUCET_ALREADY_CLAIMED" == a.error ? (console.error("Faucet already claimed"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "You already claimed the faucet. (All moneypot apps shares the same faucet and therefore the same timer)"
+        }), void grecaptcha.reset()) : "INVALID_INPUT_RESPONSE" == a.error ? (console.error("Google has rejected the response. Try to refresh and do again."), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) Google has rejected the response. Try to refresh and do again."
+        }), void grecaptcha.reset()) : (console.error(a.error), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) An error occured. Be sure you haven't already claimed a moneypot app's faucet within 5 mins."
+        }), void grecaptcha.reset()) : (console.log(a.amount / 100 + " bits has been added to your balance!"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: a.amount / 100 + " bits has been added to your balance!"
+        }), $.get("https://api.moneypot.com/v1/auth?access_token=" + access_token, function(a) {
+            "undefined" != typeof a.user.uname && (user_balance = a.user.balance / 100, $("#balance").text(user_balance.formatMoney(2, ".", ",")))
+        }), $("#faucetClaimCaptcha").css("top", "-90px"), grecaptcha.reset(), showingrecaptcha = !1, claimedTime = (new Date).getTime(), faucetTimer = setInterval(function() {
+            return parseInt(claimedTime) + 3e5 <= (new Date).getTime() ? ($("#faucetButton").removeClass("claimed"), clearInterval(faucetTimer), claimedTime = !1, $("#faucetButton").attr("disabled", !1), void $("#faucetButton").text("FAUCET")) : ($("#faucetButton").attr("disabled", !0), $("#faucetButton").addClass("claimed"), $("#faucetButton").text(parseFloat(300 - ((new Date).getTime() - claimedTime) / 1e3).formatMoney(2, ".", ",")), void 0)
+        }, 100), "undefined" != $.cookie("faucetClaim") && $.removeCookie("faucetClaim"), void $.cookie("faucetClaim", claimedTime))
+    }).fail(function(a) {
+        var b = a.error;
+        "FAUCET_ALREADY_CLAIMED" == b ? (console.error("Faucet already claimed"), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "You already claimed the faucet. (All moneypot apps shares the same faucet and therefore the same timer)"
+        }), grecaptcha.reset()) : "INVALID_INPUT_RESPONSE" == b ? (console.error("Google has rejected the response. Try to refresh and do again."), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) Google has rejected the response. Try to refresh and do again."
+        }), grecaptcha.reset()) : (console.error(b), addNewChatMessage({
+            created_at: (new Date).toISOString(),
+            text: "(faucet) An error occured. Be sure you haven't already claimed a moneypot app's faucet within 5 mins."
+        }), grecaptcha.reset()), $("#faucetClaimCaptcha").css("top", "-90px"), showingrecaptcha = !1
+    })
+}
+
+function addNewChatMessage(text)
+{
+	console.log(text.text);
+	Dispatcher.sendAction('UPDATE_USER');
+	Dispatcher.sendAction('START_REFRESHING_USER');
+}
 ////////////////////////////////////////////////////////////
-
-
+Number.prototype.formatMoney = function(c, d, t){
+var n = this, 
+    c = isNaN(c = Math.abs(c)) ? 2 : c, 
+    d = d == undefined ? "." : d, 
+    t = t == undefined ? "," : t, 
+    s = n < 0 ? "-" : "", 
+    i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))), 
+    j = (j = i.length) > 3 ? j % 3 : 0;
+   return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+ };
 ////////////////////////////////////////////////////////////
-
 var UserBox = React.createClass({
   displayName: 'UserBox',
   _onStoreChange: function() {
     this.forceUpdate();
+
   },
   componentDidMount: function() {
     worldStore.on('change', this._onStoreChange);
@@ -655,6 +724,15 @@ var UserBox = React.createClass({
   },
   _onLogout: function() {
     Dispatcher.sendAction('USER_LOGOUT');
+  },
+  _openFaucet: function() {
+	  
+    grecaptcha.render("faucetClaimCaptcha", {
+        sitekey: "6LdKBAoUAAAAAPmii6hkBFMX1eQZ87rqcldXaK2q",
+        callback: correctCaptcha
+    });
+	document.getElementById("faucetClaimCaptcha").style = "position: absolute; left: 40%; top: 30px;";
+  
   },
   _onRefreshUser: function() {
     Dispatcher.sendAction('START_REFRESHING_USER');
@@ -672,12 +750,6 @@ var UserBox = React.createClass({
     windowRef.focus();
     return false;
   },
-  _faucet: function() {
-	//document.getElementById("faucetcaptcha").style = "visiblity:shown;"
-	alert("Faucet is broken for now.");
-
-  },
-
   _openDepositPopup: function() {
     var windowUrl = config.mp_browser_uri + '/dialog/deposit?app_id=' + config.app_id;
     var windowName = 'manage-auth';
@@ -700,187 +772,220 @@ var UserBox = React.createClass({
         'Loading...'
       );
     } else if (worldStore.state.user) {
-      innerNode = el.div(
+	  innerNode = el.div(
+	  null,
+	  el.div(
+	  {className: 'navlogolol'},
+	  el.img(
+	  {className: 'menu',
+	  src: 'http://www.casual-game.net/img/menu_mobile.png?v=2',
+	  style: {float: 'right'}},
+	  ''
+	  ),
+	  el.img(
+	  {src: 'http://www.casual-game.net/img/logo.png',
+	  valign: 'middle'},
+	  'Bitsino'
+	  )
+	  ),
+	  el.nav(
+	  {},
+	  el.ul(
+	  {},
+	  el.li(
+	  {},
+	  el.a(
+	  {href: '/minesweeper'},
+	  'Minesweeper'
+	  )
+	  ),
+	  el.li(
+	  {},
+	  el.a(
+	  {href: '/coinflip'},
+	  'Coinflip'
+	  ) 
+	  ),
+	  el.li(
+	  {},
+	  el.a(
+	  {href: '/cases'},
+	  'Cases'
+	  )
+	  ),
+	  el.li(
+	  {},
+	  el.a(
+	  {href: '/dice'},
+	  'Dice'
+	  )
+	  ),
+	  el.li(
+	  {},
+	  el.a(
+	  {href: '/pyrambit'},
+	  'Pyramid'
+	  )
+	  )
+	  )
+	  ),
+	  el.div(
+	  {className: 'back'},
+	  el.a(
+	  {href: 'http://bitsino.xyz'},
+	  '<< Back to home'
+	  )
+	  ),
+	  el.h1(
+	  {},
+	  'Dice'
+	  ),
+	  el.div(
+	  {className: 'usersbalance'},
+	  el.div(
+	  {id: 'navButtons'},
+	  el.button(
+	  {className: 'navbarButtons',
+	  type: 'button',
+	  onClick: this._openWithdrawPopup},
+	  'Withdraw'
+	  ),
+	  el.button(
+	  {className: 'navbarButtons',
+	  type: 'button',
+	  onClick: this._openDepositPopup},
+	  'Deposit'
+	  ),
+	  el.button(
+	  {className: 'navbarButtons',
+	  type: 'button',
+	  id: 'faucetButton',
+	  onClick: this._openFaucet},
+	  'Faucet'
+	  ),
+	  el.button(
+	  {className: 'navbarButtons',
+	  type: 'button',
+	  onClick: this._onLogout},
+	  'Logout'
+	  )
+	  ),
+	  el.div(
+          {
+            id: 'balancekek',
+            style: {marginRight: '5px'}
+          },
+          'Balance: '+(worldStore.state.user.balance / 100).formatMoney(2, '.', ',') + ' bits'
+        )
+	  )
+	  );
+      /*innerNode = el.div(
         null,
-		el.div(
-		{}
-		),
-			el.div(
-	{className: 'sidenav',
-	id: 'ppSidenav'},
-			el.div(
-		{},
-		el.div(
-		{},
-		el.div(
-
-		{},
-		          (worldStore.state.user.balance / 100) + ' bits',
+        // Deposit/Withdraw popup buttons
+        el.div(
+          {className: 'btn-group navbar-left btn-group-xs'},
+          el.button(
+            {
+              type: 'button',
+              className: 'btn navbar-btn btn-xs ' + (betStore.state.wager.error === 'CANNOT_AFFORD_WAGER' ? 'btn-success' : 'btn-default'),
+              onClick: this._openDepositPopup
+            },
+            'Deposit'
+          ),
+          el.button(
+            {
+              type: 'button',
+              className: 'btn btn-default navbar-btn btn-xs',
+              onClick: this._openWithdrawPopup
+            },
+            'Withdraw'
+          )
+        ),
+        // Balance
+        el.span(
+          {
+            className: 'navbar-text',
+            style: {marginRight: '5px'}
+          },
+          (worldStore.state.user.balance / 100) + ' bits',
           !worldStore.state.user.unconfirmed_balance ?
            '' :
            el.span(
              {style: { color: '#e67e22'}},
              ' + ' + (worldStore.state.user.unconfirmed_balance / 100) + ' bits pending'
            )
-
-		),
-		el.div(
-		{
-		onClick: this._openDepositPopup},
-		'Deposit'
-		),
-		el.div(
-		{
-		onClick: this._openWithdrawPopup},
-		'Withdraw'
-		),
-		el.div(
-		{onClick: this._onLogout
-		},
-		'Logout'
-		)
-		)))
-
-	);
+        ),
+        // Refresh button
+        el.button(
+          {
+            className: 'btn btn-link navbar-btn navbar-left ' + (worldStore.state.isRefreshingUser ? ' rotate' : ''),
+            title: 'Refresh Balance',
+            disabled: worldStore.state.isRefreshingUser,
+            onClick: this._onRefreshUser,
+            style: {
+              paddingLeft: 0,
+              paddingRight: 0,
+              marginRight: '10px'
+            }
+          },
+          el.span({className: 'glyphicon glyphicon-refresh'})
+        ),
+        // Logged in as...
+        el.span(
+          {className: 'navbar-text'},
+          'Logged in as ',
+          el.code(null, worldStore.state.user.uname)
+        ),
+        // Logout button
+        el.button(
+          {
+            type: 'button',
+            onClick: this._onLogout,
+            className: 'navbar-btn btn btn-default'
+          },
+          'Logout'
+        )
+      );*/
     } else {
       // User needs to login
-      innerNode = el.a(
-		{className: 'z',
-         href: config.mp_browser_uri + '/oauth/authorize' +
-         '?app_id=' + config.app_id +
-         '&redirect_uri=' + config.redirect_uri,
-         className: 'btn btn-default'},
-		'Login'
-		);
+	  	  innerNode = el.div(
+	  null,
+	  el.div(
+	  {className: 'navlogolol'},
+	  el.a(
+          {
+            href: config.mp_browser_uri + '/oauth/authorize' +
+              '?app_id=' + config.app_id +
+              '&redirect_uri=' + config.redirect_uri,
+			  style: {float: 'right'}
+          },
+	  'Login with MoneyPot'
+	  ),
+	  el.img(
+	  {src: 'http://www.casual-game.net/img/logo.png',
+	  valign: 'middle'},
+	  'Bitsino'
+	  )
+	  )
+	  );
     }
 
     return el.div(
-      {className: 'navbar-right'},
+      {},
       innerNode
     );
   }
 });
 
-var FaucetTabContent = React.createClass({
-  displayName: 'FaucetTabContent',
-  getInitialState: function() {
-    return {
-      // SHOW_RECAPTCHA | SUCCESSFULLY_CLAIM | ALREADY_CLAIMED | WAITING_FOR_SERVER
-      faucetState: 'SHOW_RECAPTCHA',
-      // :: Integer that's updated after the claim from the server so we
-      // can show user how much the claim was worth without hardcoding it
-      // - It will be in satoshis
-      claimAmount: undefined
-    };
-  },
-  // This function is extracted so that we can call it on update and mount
-  // when the window.grecaptcha instance loads
-  _renderRecaptcha: function() {
-    worldStore.state.grecaptcha.render(
-      'recaptcha-target',
-      {
-        sitekey: config.recaptcha_sitekey,
-        callback: this._onRecaptchaSubmit
-      }
-    );
-  },
-  // `response` is the g-recaptcha-response returned from google
-  _onRecaptchaSubmit: function(response) {
-    var self = this;
-    console.log('recaptcha submitted: ', response);
-
-    self.setState({ faucetState: 'WAITING_FOR_SERVER' });
-
-    MoneyPot.claimFaucet(response, {
-      // `data` is { claim_id: Int, amount: Satoshis }
-      success: function(data) {
-        Dispatcher.sendAction('UPDATE_USER', {
-          balance: worldStore.state.user.balance + data.amount
-        });
-        self.setState({
-          faucetState: 'SUCCESSFULLY_CLAIMED',
-          claimAmount: data.amount
-        });
-        // self.props.faucetClaimedAt.update(function() {
-        //   return new Date();
-        // });
-      },
-      error: function(xhr, textStatus, errorThrown) {
-        if (xhr.responseJSON && xhr.responseJSON.error === 'FAUCET_ALREADY_CLAIMED') {
-          self.setState({ faucetState: 'ALREADY_CLAIMED' });
-        }
-      }
-    });
-  },
-  // This component will mount before window.grecaptcha is loaded if user
-  // clicks the Faucet tab before the recaptcha.js script loads, so don't assume
-  // we have a grecaptcha instance
-  componentDidMount: function() {
-    if (worldStore.state.grecaptcha) {
-      this._renderRecaptcha();
-    }
-
-    worldStore.on('grecaptcha_loaded', this._renderRecaptcha);
-  },
-  componentWillUnmount: function() {
-    worldStore.off('grecaptcha_loaded', this._renderRecaptcha);
-  },
-  render: function() {
-
-    // If user is not logged in, let them know only logged-in users can claim
-    if (!worldStore.state.user) {
-      return el.p(
-        {className: 'lead'},
-        'You must login to claim faucet'
-      );
-    }
-
-    var innerNode;
-    // SHOW_RECAPTCHA | SUCCESSFULLY_CLAIMED | ALREADY_CLAIMED | WAITING_FOR_SERVER
-    switch(this.state.faucetState) {
-    case 'SHOW_RECAPTCHA':
-      innerNode = el.div(
-        { id: 'recaptcha-target' },
-        !!worldStore.state.grecaptcha ? '' : 'Loading...'
-      );
-      break;
-    case 'SUCCESSFULLY_CLAIMED':
-      innerNode = el.div(
-        null,
-        'Successfully claimed ' + this.state.claimAmount/100 + ' bits.' +
-          // TODO: What's the real interval?
-          ' You can claim again in 5 minutes.'
-      );
-      break;
-    case 'ALREADY_CLAIMED':
-      innerNode = el.div(
-        null,
-        'ALREADY_CLAIMED'
-      );
-      break;
-    case 'WAITING_FOR_SERVER':
-      innerNode = el.div(
-        null,
-        'WAITING_FOR_SERVER'
-      );
-      break;
-    default:
-      alert('Unhandled faucet state');
-      return;
-    }
-
-    return el.div(
-      null,
-      innerNode
-    );
-  }
-});
+var target = '>';
 
 var Navbar = React.createClass({
   displayName: 'Navbar',
   render: function() {
-    return React.createElement(UserBox, null);
-
+    return el.div(
+      {},
+        React.createElement(UserBox, null)
+      );
   }
 });
 
@@ -947,11 +1052,11 @@ var ChatBoxInput = React.createClass({
             el.input(
               {
                 id: 'chat-input',
-                className: 'yahah',
+                className: 'form-control',
                 type: 'text',
                 value: this.state.text,
                 placeholder: worldStore.state.user ?
-                  'Type your message...' :
+                  'Click here and begin typing...' :
                   'Login to chat',
                 onChange: this._onChange,
                 onKeyPress: this._onKeyPress,
@@ -961,12 +1066,55 @@ var ChatBoxInput = React.createClass({
                 disabled: !worldStore.state.user || chatStore.state.loadingInitialMessages
               }
             )
+        ),
+        el.div(
+          {className: 'col-md-3'},
+          el.button(
+            {
+              type: 'button',
+              className: 'btn btn-default btn-block',
+              disabled: !worldStore.state.user ||
+                chatStore.state.waitingForServer ||
+                this.state.text.trim().length === 0,
+              onClick: this._onSend
+            },
+            'Send'
+          )
         )
       )
     );
   }
 });
 
+var ChatUserList = React.createClass({
+  displayName: 'ChatUserList',
+  render: function() {
+    return (
+      el.div(
+        {className: 'panel panel-default'},
+        el.div(
+          {className: 'panel-heading'},
+          'UserList'
+        ),
+        el.div(
+          {className: 'panel-body'},
+          el.ul(
+            {},
+            _.values(chatStore.state.userList).map(function(u) {
+              return el.li(
+                {
+                  key: u.uname
+                },
+                helpers.roleToLabelElement(u.role),
+                ' ' + u.uname
+              );
+            })
+          )
+        )
+      )
+    );
+  }
+});
 
 var ChatBox = React.createClass({
   displayName: 'ChatBox',
@@ -1025,7 +1173,9 @@ var ChatBox = React.createClass({
                 },
                 el.span(
                   {
-
+                    style: {
+                      fontFamily: 'monospace'
+                    }
                   },
                   helpers.formatDateToTime(m.created_at),
                   ' '
@@ -1076,39 +1226,328 @@ var ChatBox = React.createClass({
   }
 });
 
-
-
-
-
-var BetBox = React.createClass({
-  displayName: 'BetBox',
-
-
+var BetBoxChance = React.createClass({
+  displayName: 'BetBoxChance',
+  // Hookup to stores
   _onStoreChange: function() {
     this.forceUpdate();
   },
   componentDidMount: function() {
+    betStore.on('change', this._onStoreChange);
     worldStore.on('change', this._onStoreChange);
   },
   componentWillUnmount: function() {
+    betStore.off('change', this._onStoreChange);
     worldStore.off('change', this._onStoreChange);
   },
-  _makeBetHandler: function(cond, multiplier223) {
+  //
+  render: function() {
+    // 0.00 to 1.00
+
+    // Just show '--' if chance can't be calculated
+    var innerNode;
+    if (isError) {
+      innerNode = el.span(
+        {className: 'lead'},
+        ' --'
+      );
+    } else {
+      innerNode = el.span(
+        {className: 'lead'},
+        ' ' + (winProb * 100).toFixed(2).toString() + '%'
+      );
+    }
+
+    return el.div(
+      {},
+      el.span(
+        {className: 'lead', style: { fontWeight: 'bold' }},
+        'Chance:'
+      ),
+      innerNode
+    );
+  }
+});
+
+var BetBoxProfit = React.createClass({
+  displayName: 'BetBoxProfit',
+  // Hookup to stores
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    betStore.on('change', this._onStoreChange);
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    betStore.off('change', this._onStoreChange);
+    worldStore.off('change', this._onStoreChange);
+  },
+  //
+  render: function() {
+    var profit = betStore.state.wager.num * (betStore.state.multiplier.num - 1);
+
+    var innerNode;
+    if (betStore.state.multiplier.error || betStore.state.wager.error) {
+      innerNode = el.span(
+        {className: 'lead'},
+        '--'
+      );
+    } else {
+      innerNode = el.span(
+        {
+          className: 'lead',
+          style: { color: '#39b54a' }
+        },
+        '+' + profit.toFixed(2)
+      );
+    }
+
+    return el.div(
+      null,
+      el.span(
+        {className: 'lead', style: { fontWeight: 'bold' }},
+        'Profit: '
+      ),
+      innerNode
+    );
+  }
+});
+
+var BetBoxMultiplier = React.createClass({
+  displayName: 'BetBoxMultiplier',
+  // Hookup to stores
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    betStore.on('change', this._onStoreChange);
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    betStore.off('change', this._onStoreChange);
+    worldStore.off('change', this._onStoreChange);
+  },
+  //
+  _validateMultiplier: function(newStr) {
+    var num = parseFloat(newStr, 10);
+
+    // If num is a number, ensure it's at least 0.01x
+    // if (Number.isFinite(num)) {
+    //   num = Math.max(num, 0.01);
+    //   this.props.currBet.setIn(['multiplier', 'str'], num.toString());
+    // }
+
+    var isFloatRegexp = /^(\d*\.)?\d+$/;
+
+    // Ensure str is a number
+    if (isNaN(num) || !isFloatRegexp.test(newStr)) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'INVALID_MULTIPLIER' });
+      // Ensure multiplier is >= 1.00x
+    } else if (num < 1.01) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_LOW' });
+      // Ensure multiplier is <= max allowed multiplier (100x for now)
+    } else if (num > 9900) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_HIGH' });
+      // Ensure no more than 2 decimal places of precision
+    } else if (helpers.getPrecision(num) > 2) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_PRECISE' });
+      // multiplier str is valid
+    } else {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', {
+        num: num,
+        error: null
+      });
+	  document.getElementById("betMultiplier").value = num;
+    }
+  },
+  _onMultiplierChange: function(e) {
+    console.log('Multiplier changed');
+    var str = e.target.value;
+    console.log('You entered', str, 'as your multiplier');
+    Dispatcher.sendAction('UPDATE_MULTIPLIER', { str: str });
+    this._validateMultiplier(str);
+  },
+  render: function() {
+    return el.div(
+      {className: 'form-group'},
+      el.p(
+        {className: 'lead'},
+        el.strong(
+          {
+            style: betStore.state.multiplier.error ? { color: 'red' } : {}
+          },
+          'Multiplier:')
+      ),
+      el.div(
+        {className: 'input-group'},
+        el.input(
+          {
+            type: 'text',
+            value: betStore.state.multiplier.str,
+            className: 'form-control input-lg',
+            onChange: this._onMultiplierChange,
+            disabled: !!worldStore.state.isLoading
+          }
+        ),
+        el.span(
+          {className: 'input-group-addon'},
+          'x'
+        )
+      )
+    );
+  }
+});
+
+var BetBoxWager = React.createClass({
+  displayName: 'BetBoxWager',
+  // Hookup to stores
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  _onBalanceChange: function() {
+    // Force validation when user logs in
+    // TODO: Re-force it when user refreshes
+    Dispatcher.sendAction('UPDATE_WAGER', {});
+  },
+  componentDidMount: function() {
+    betStore.on('change', this._onStoreChange);
+    worldStore.on('change', this._onStoreChange);
+    worldStore.on('user_update', this._onBalanceChange);
+  },
+  componentWillUnmount: function() {
+    betStore.off('change', this._onStoreChange);
+    worldStore.off('change', this._onStoreChange);
+    worldStore.off('user_update', this._onBalanceChange);
+  },
+  _onWagerChange: function(e) {
+    var str = e.target.value;
+    Dispatcher.sendAction('UPDATE_WAGER', { str: str });
+  },
+  _onHalveWager: function() {
+    var newWager = Math.round(betStore.state.wager.num / 2);
+    Dispatcher.sendAction('UPDATE_WAGER', { str: newWager.toString() });
+  },
+  _onDoubleWager: function() {
+    var n = betStore.state.wager.num * 2;
+    Dispatcher.sendAction('UPDATE_WAGER', { str: n.toString() });
+
+  },
+  _onMaxWager: function() {
+    // If user is logged in, use their balance as max wager
+    var balanceBits;
+    if (worldStore.state.user) {
+      balanceBits = Math.floor(worldStore.state.user.balance / 100);
+    } else {
+      balanceBits = 42000;
+    }
+    Dispatcher.sendAction('UPDATE_WAGER', { str: balanceBits.toString() });
+  },
+  //
+  render: function() {
+    var style1 = { borderBottomLeftRadius: '0', borderBottomRightRadius: '0' };
+    var style2 = { borderTopLeftRadius: '0' };
+    var style3 = { borderTopRightRadius: '0' };
+    return el.div(
+      {className: 'form-group'},
+      el.p(
+        {className: 'lead'},
+        el.strong(
+          // If wagerError, make the label red
+          betStore.state.wager.error ? { style: {color: 'red'} } : null,
+          'Wager:')
+      ),
+      el.input(
+        {
+          value: betStore.state.wager.str,
+          type: 'text',
+          className: 'form-control input-lg',
+          style: style1,
+          onChange: this._onWagerChange,
+          disabled: !!worldStore.state.isLoading,
+          placeholder: 'Bits'
+        }
+      ),
+      el.div(
+        {className: 'btn-group btn-group-justified'},
+        el.div(
+          {className: 'btn-group'},
+          el.button(
+            {
+              className: 'btn btn-default btn-md',
+              type: 'button',
+              style: style2,
+              onClick: this._onHalveWager
+            },
+            '1/2x ', worldStore.state.hotkeysEnabled ? el.kbd(null, 'X') : ''
+          )
+        ),
+        el.div(
+          {className: 'btn-group'},
+          el.button(
+            {
+              className: 'btn btn-default btn-md',
+              type: 'button',
+              onClick: this._onDoubleWager
+            },
+            '2x ', worldStore.state.hotkeysEnabled ? el.kbd(null, 'C') : ''
+          )
+        ),
+        el.div(
+          {className: 'btn-group'},
+          el.button(
+            {
+              className: 'btn btn-default btn-md',
+              type: 'button',
+              style: style3,
+              onClick: this._onMaxWager
+            },
+            'Max'
+          )
+        )
+      )
+    );
+  }
+});
+
+var BetBoxButton = React.createClass({
+  displayName: 'BetBoxButton',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+    _onBalanceChange: function() {
+    // Force validation when user logs in
+    // TODO: Re-force it when user refreshes
+    Dispatcher.sendAction('UPDATE_WAGER', {});
+  },
+  componentDidMount: function() {
+    betStore.on('change', this._onStoreChange);
+    worldStore.on('change', this._onStoreChange);
+    worldStore.on('user_update', this._onBalanceChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+    betStore.off('change', this._onStoreChange);
+  },
+  getInitialState: function() {
+    return { waitingForServer: false };
+  },
+  // cond is '>' or '<'
+  _makeBetHandler: function(cond2) {
     var self = this;
 
-    console.assert(cond === '<' || cond === '>');
 
     return function(e) {
       console.log('Placing bet...');
-
+var cond = '>';
       // Indicate that we are waiting for server response
       self.setState({ waitingForServer: true });
 
       var hash = betStore.state.nextHash;
       console.assert(typeof hash === 'string');
 
-      var wagerSatoshis = prompt("What is your wager?", "100") * 100;
-      var multiplier = multiplier223;
+      var wagerSatoshis = betStore.state.wager.num * 100;
+      var multiplier = cond2;
       var payoutSatoshis = wagerSatoshis * multiplier;
 
       var number = helpers.calcNumber(
@@ -1170,71 +1609,573 @@ var BetBox = React.createClass({
     };
   },
   render: function() {
+    var innerNode;
+
+    // TODO: Create error prop for each input
+    var error = betStore.state.wager.error || betStore.state.multiplier.error;
+
+    if (worldStore.state.isLoading) {
+      // If app is loading, then just disable button until state change
+      innerNode = el.button(
+        {type: 'button', disabled: true, className: 'btn btn-lg btn-block btn-default'},
+        'Loading...'
+      );
+    } else if (error) {
+      // If there's a betbox error, then render button in error state
+
+      var errorTranslations = {
+        'CANNOT_AFFORD_WAGER': 'You cannot afford wager',
+        'INVALID_WAGER': 'Invalid wager',
+        'INVALID_MULTIPLIER': 'Invalid multiplier',
+        'MULTIPLIER_TOO_PRECISE': 'Multiplier too precise',
+        'MULTIPLIER_TOO_HIGH': 'Multiplier too high',
+        'MULTIPLIER_TOO_LOW': 'Multiplier too low'
+      };
+
+      innerNode = el.button(
+        {type: 'button',
+         disabled: true,
+         className: 'btn btn-lg btn-block btn-danger'},
+        errorTranslations[error] || 'Invalid bet'
+      );
+    } else if (worldStore.state.user) {
+      // If user is logged in, let them submit bet
+      innerNode =
+        el.div(
+          {className: 'row'},
+          // bet hi
+          el.div(
+            {className: 'col-xs-6'},
+            el.button(
+              {
+                id: 'bet-hi',
+                type: 'button',
+                className: 'btn btn-lg btn-primary btn-block',
+                onClick: this._makeBetHandler('>'),
+                disabled: !!this.state.waitingForServer
+              },
+              'Bet Hi ', worldStore.state.hotkeysEnabled ? el.kbd(null, 'H') : ''
+            )
+          ),
+          // bet lo
+          el.div(
+            {className: 'col-xs-6'},
+            el.button(
+              {
+                id: 'bet-lo',
+                type: 'button',
+                className: 'btn btn-lg btn-primary btn-block',
+                onClick: this._makeBetHandler('<'),
+                disabled: !!this.state.waitingForServer
+              },
+              'Bet Lo ', worldStore.state.hotkeysEnabled ? el.kbd(null, 'L') : ''
+            )
+          )
+        );
+    } else {
+      // If user isn't logged in, give them link to /oauth/authorize
+      innerNode = el.a(
+        {
+          href: config.mp_browser_uri + '/oauth/authorize' +
+            '?app_id=' + config.app_id +
+            '&redirect_uri=' + config.redirect_uri,
+          className: 'btn btn-lg btn-block btn-success'
+        },
+        'Login with MoneyPot'
+      );
+    }
+
     return el.div(
-	null,
-
-
-	el.div(
       null,
+      el.div(
+        {className: 'col-md-2',},
+        (this.state.waitingForServer) ?
+          el.span(
+            {
+              className: 'glyphicon glyphicon-refresh rotate',
+              style: { marginTop: '15px' }
+            }
+          ) : ''
+      ),
+      el.div(
+        {className: 'col-md-8'},
+        innerNode
+      )
+    );
+  }
+});
 
+var HotkeyToggle = React.createClass({
+  displayName: 'HotkeyToggle',
+  _onClick: function() {
+    Dispatcher.sendAction('TOGGLE_HOTKEYS');
+  },
+  render: function() {
+    return (
+      el.div(
+        {className: 'text-center'},
+        el.button(
+          {
+            type: 'button',
+            className: 'btn btn-default btn-sm',
+            onClick: this._onClick,
+            style: { marginTop: '-15px' }
+          },
+          'Hotkeys: ',
+          worldStore.state.hotkeysEnabled ?
+            el.span({className: 'label label-success'}, 'ON') :
+          el.span({className: 'label label-default'}, 'OFF')
+        )
+      )
+    );
+  }
+});
+
+var BetBox = React.createClass({
+  displayName: 'BetBox',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+  },
+    _onWagerChange: function(e) {
+    var str = e.target.value;
+    Dispatcher.sendAction('UPDATE_WAGER', { str: str });
+	//Dispatcher.sendAction('UPDATE_USER');
+  },
+  _onHalveWager: function() {
+    var newWager = Math.round(betStore.state.wager.num / 2);
+    Dispatcher.sendAction('UPDATE_WAGER', { str: newWager.toString() });
+	//Dispatcher.sendAction('UPDATE_USER');
+  },
+  _onDoubleWager: function() {
+    var n = betStore.state.wager.num * 2;
+    Dispatcher.sendAction('UPDATE_WAGER', { str: n.toString() });
+	//Dispatcher.sendAction('UPDATE_USER');
+
+  },
+  _onMaxWager: function() {
+    // If user is logged in, use their balance as max wager
+    var balanceBits;
+    if (worldStore.state.user) {
+      balanceBits = Math.floor(worldStore.state.user.balance / 100);
+    } else {
+      balanceBits = 42000;
+    }
+    Dispatcher.sendAction('UPDATE_WAGER', { str: balanceBits.toString() });
+	//Dispatcher.sendAction('UPDATE_USER');
+  },
+  _makeBetHandler: function(cond2) {
+    var self = this;
+
+
+    return function(e) {
+      console.log('Placing bet...');
+var cond = '>';
+      // Indicate that we are waiting for server response
+      self.setState({ waitingForServer: true });
+
+      var hash = betStore.state.nextHash;
+      console.assert(typeof hash === 'string');
+
+      var wagerSatoshis = betStore.state.wager.num * 100;
+      var multiplier = cond2;
+      var payoutSatoshis = wagerSatoshis * multiplier;
+
+      var number = helpers.calcNumber(
+        cond, helpers.multiplierToWinProb(multiplier)
+      );
+
+      var params = {
+        wager: wagerSatoshis,
+        client_seed: 0, // TODO
+        hash: hash,
+        cond: cond,
+        target: number,
+        payout: payoutSatoshis
+      };
+
+      MoneyPot.placeSimpleDiceBet(params, {
+        success: function(bet) {
+          console.log('Successfully placed bet:', bet);
+          // Append to bet list
+
+          // We don't get this info from the API, so assoc it for our use
+          bet.meta = {
+            cond: cond,
+            number: number,
+            hash: hash,
+            isFair: CryptoJS.SHA256(bet.secret + '|' + bet.salt).toString() === hash
+          };
+
+          // Sync up with the bets we get from socket
+          bet.wager = wagerSatoshis;
+          bet.uname = worldStore.state.user.uname;
+
+          Dispatcher.sendAction('NEW_BET', bet);
+
+          // Update next bet hash
+          Dispatcher.sendAction('SET_NEXT_HASH', bet.next_hash);
+
+          // Update user balance
+          Dispatcher.sendAction('UPDATE_USER', {
+            balance: worldStore.state.user.balance + bet.profit
+          });
+        },
+        error: function(xhr) {
+          console.log('Error');
+          if (xhr.responseJSON && xhr.responseJSON) {
+            alert(xhr.responseJSON.error);
+          } else {
+            alert('Internal Error');
+          }
+        },
+        complete: function() {
+          self.setState({ waitingForServer: false });
+          // Force re-validation of wager
+          Dispatcher.sendAction('UPDATE_WAGER', {
+            str: betStore.state.wager.str
+          });
+        }
+      });
+    };
+  },
+  _changeTarget: function() {
+	  if(target == '>') 
+	  {
+		  target = '<';
+		  document.getElementById("betTargetSpan").innerHTML = "LO";
+		  return;
+	  }
+	  if(target == '<') 
+	  {
+		  target = '>';
+		  document.getElementById("betTargetSpan").innerHTML = "HI";
+		  return;
+	  }
+  },
+    _validateMultiplier: function(newStr) {
+    var num = parseFloat(newStr, 10);
+
+    // If num is a number, ensure it's at least 0.01x
+    // if (Number.isFinite(num)) {
+    //   num = Math.max(num, 0.01);
+    //   this.props.currBet.setIn(['multiplier', 'str'], num.toString());
+    // }
+
+    var isFloatRegexp = /^(\d*\.)?\d+$/;
+
+    // Ensure str is a number
+    if (isNaN(num) || !isFloatRegexp.test(newStr)) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'INVALID_MULTIPLIER' });
+      // Ensure multiplier is >= 1.00x
+    } else if (num < 1.01) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_LOW' });
+      // Ensure multiplier is <= max allowed multiplier (100x for now)
+    } else if (num > 9900) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_HIGH' });
+      // Ensure no more than 2 decimal places of precision
+    } else if (helpers.getPrecision(num) > 2) {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', { error: 'MULTIPLIER_TOO_PRECISE' });
+      // multiplier str is valid
+    } else {
+      Dispatcher.sendAction('UPDATE_MULTIPLIER', {
+        num: num,
+        error: null
+      });
+    }
+  },
+  _onMultiplierChange: function(e) {
+    console.log('Multiplier changed');
+    var str = e.target.value;
+    console.log('You entered', str, 'as your multiplier');
+    Dispatcher.sendAction('UPDATE_MULTIPLIER', { str: str });
+    this._validateMultiplier(str);
+	Dispatcher.sendAction('UPDATE_USER');
+  },
+  render: function() {
+	var winProb = helpers.multiplierToWinProb(betStore.state.multiplier.num);
+
+    var isError = betStore.state.multiplier.error || betStore.state.wager.error;
+	
+    return el.div(
+	
+      null,
 	  el.div(
-	  {className: 'y'},
+	  {className: 'betControl'},
 	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "2.0")},
+	  {className: 'dice_label'},
+	  el.label(
+	  {htmlFor: 'betSize'},
+	  'Wager'
+	  )
+	  ),
+	  el.input(
+	  {type: 'text',
+	  id:'betSize',
+	  value: '1',
+	  onChange: this._onWagerChange}
+	  ),
+	  el.button(
+	  {className: 'diceControlButtons',
+	  type: 'button',
+	  onClick: this._onHalveWager},
+	  '1/2'
+	  ),
+	  el.button(
+	  {className: 'diceControlButtons',
+	  type: 'button',
+	  onClick: this._onDoubleWager},
+	  '2X'
+	  ),
+	  el.button(
+	  {className: 'diceControlButtons',
+	  type: 'button',
+	  onClick: this._onMaxWager},
+	  'MAX'
+	  ),
+	  el.div(
+	  {id: 'pyramidholder',
+	  style: {width: '100%', height: '100%'}},
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton',
+	  onClick: this._makeBetHandler('2')},
 	  '2'
-	  )),
-	  el.div(
-	  {className: 'y'},
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "4.0")},
+	  ),
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton2',
+	  onClick: this._makeBetHandler('4')},
 	  '4'
 	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "8.0")},
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton2',
+	  onClick: this._makeBetHandler('8')},
 	  '8'
-	  )),
-	  el.div(
-	  {className: 'y'},
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "16.0")},
+	  ),	  
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton3',
+	  onClick: this._makeBetHandler('16')},
 	  '16'
 	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "32.0")},
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton3',
+	  onClick: this._makeBetHandler('32')},
 	  '32'
 	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "64.0")},
+	  el.button(
+	  {type: 'button',
+	  className: 'rollButton3',
+	  onClick: this._makeBetHandler('64')},
 	  '64'
-	  )),
-	  el.div(
-	  {className: 'y'},
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "128.0")},
-	  '128'
-	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "256.0")},
-	  '256'
-	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "512.0")},
-	  '512'
-	  ),
-	  el.div(
-	  {className: 'z',
-	  onClick: this._makeBetHandler('>', "1024.0")},
-	  '1024'
-	  ))));
+	  )	  
+	  )
+	  
+	  )
+	  );/*    var winProb = helpers.multiplierToWinProb(betStore.state.multiplier.num);
+
+    var isError = betStore.state.multiplier.error || betStore.state.wager.error;
+
+    // Just show '--' if chance can't be calculated
+    var innerNode;
+    if (isError) {
+      innerNode = el.span(
+        {className: 'lead'},
+        ' --'
+      );
+    } else {
+      innerNode = el.span(
+        {className: 'lead'},
+        ' ' + (winProb * 100).toFixed(2).toString() + '%'
+      );
+    }
+	  
+	        el.div(
+        {className: 'panel panel-default'},
+        el.div(
+          {className: 'panel-body'},
+          el.div(
+            {className: 'row'},
+            el.div(
+              {className: 'col-xs-6'},
+              React.createElement(BetBoxWager, null)
+            ),
+            el.div(
+              {className: 'col-xs-6'},
+              React.createElement(BetBoxMultiplier, null)
+            ),
+            // HR
+            el.div(
+              {className: 'row'},
+              el.div(
+                {className: 'col-xs-12'},
+                el.hr(null)
+              )
+            ),
+            // Bet info bar
+            el.div(
+              null,
+              el.div(
+                {className: 'col-sm-6'},
+                React.createElement(BetBoxProfit, null)
+              ),
+              el.div(
+                {className: 'col-sm-6'},
+                React.createElement(BetBoxChance, null)
+              )
+            )
+          )
+        ),
+        el.div(
+          {className: 'panel-footer clearfix'},
+          React.createElement(BetBoxButton, null)
+        )
+      ),
+      React.createElement(HotkeyToggle, null)
+    );*/
+  }
+});
+
+var Tabs = React.createClass({
+  displayName: 'Tabs',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+  },
+  _makeTabChangeHandler: function(tabName) {
+    var self = this;
+    return function() {
+      Dispatcher.sendAction('CHANGE_TAB', tabName);
+    };
+  },
+  render: function() {
+    return el.ul(
+      {className: 'nav nav-tabs'},
+      // Only show MY BETS tab if user is logged in
+      !worldStore.state.user ? '' :
+        el.li(
+          {className: worldStore.state.currTab === 'MY_BETS' ? 'active' : ''},
+          el.a(
+            {
+              href: 'javascript:void(0)',
+              onClick: this._makeTabChangeHandler('MY_BETS')
+            },
+            'My Bets'
+          )
+        ),
+			        React.createElement(TabContent, null)
+    );
+  }
+});
+
+var MyBetsTabContent = React.createClass({
+  displayName: 'MyBetsTabContent',
+  _onStoreChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    worldStore.on('change', this._onStoreChange);
+  },
+  componentWillUnmount: function() {
+    worldStore.off('change', this._onStoreChange);
+  },
+  render: function() {
+    return el.div(
+      null,
+      el.table(
+        {className: 'table'},
+        el.thead(
+          null,
+          el.tr(
+            null,
+            el.th(null, 'ID'),
+            el.th(null, 'Time'),
+            el.th(null, 'User'),
+            el.th(null, 'Wager'),
+            el.th(null, 'Target'),
+            el.th(null, 'Roll'),
+            el.th(null, 'Profit')
+          )
+        ),
+        el.tbody(
+          null,
+          worldStore.state.bets.toArray().map(function(bet) {
+            return el.tr(
+              {
+                key: bet.bet_id || bet.id
+              },
+              // bet id
+              el.td(
+                null,
+                el.a(
+                  {
+                    href: config.mp_browser_uri + '/bets/' + (bet.bet_id || bet.id),
+                    target: '_blank'
+                  },
+                  bet.bet_id || bet.id
+                )
+              ),
+              // Time
+              el.td(
+                null,
+                helpers.formatDateToTime(bet.created_at)
+              ),
+              // User
+              el.td(
+                null,
+                el.a(
+                  {
+                    href: config.mp_browser_uri + '/users/' + bet.uname,
+                    target: '_blank'
+                  },
+                  bet.uname
+                )
+              ),
+              // wager
+              el.td(
+                null,
+                helpers.round10(bet.wager/100, -2),
+                ' bits'
+              ),
+              // target
+              el.td(
+                null,
+                bet.meta.cond + ' ' + bet.meta.number.toFixed(2)
+              ),
+              // roll
+              el.td(
+                null,
+                bet.outcome + ' ',
+                bet.meta.isFair ?
+                  el.span(
+                    {className: 'label label-success'}, 'Verified') : ''
+              ),
+              // profit
+              el.td(
+                {style: {color: bet.profit > 0 ? 'green' : 'red'}},
+                bet.profit > 0 ?
+                  '+' + helpers.round10(bet.profit/100, -2) :
+                  helpers.round10(bet.profit/100, -2),
+                ' bits'
+              )
+            );
+          }).reverse()
+        )
+      )
+    );
   }
 });
 
@@ -1533,8 +2474,8 @@ var AllBetsTabContent = React.createClass({
             el.th(null, 'User'),
             el.th(null, 'Wager'),
             el.th({className: 'text-right'}, 'Target'),
-			el.th(null, 'Outcome'),
             // el.th(null, 'Roll'),
+            el.th(null, 'Outcome'),
             el.th(
               {
                 style: {
@@ -1555,67 +2496,6 @@ var AllBetsTabContent = React.createClass({
     );
   }
 });
-
-
-var Tabs = React.createClass({
-  displayName: 'Tabs',
-  _onStoreChange: function() {
-    this.forceUpdate();
-  },
-  componentDidMount: function() {
-    worldStore.on('change', this._onStoreChange);
-  },
-  componentWillUnmount: function() {
-    worldStore.off('change', this._onStoreChange);
-  },
-  _makeTabChangeHandler: function(tabName) {
-    var self = this;
-    return function() {
-      Dispatcher.sendAction('CHANGE_TAB', tabName);
-    };
-  },
-  render: function() {
-    return el.ul(
-      {className: 'nav nav-tabs'},
-      el.li(
-        {className: worldStore.state.currTab === 'ALL_BETS' ? 'active' : ''},
-        el.a(
-          {
-            href: 'javascript:void(0)',
-            onClick: this._makeTabChangeHandler('ALL_BETS')
-          },
-          'All Bets'
-        )
-      ),
-      // Only show MY BETS tab if user is logged in
-      !worldStore.state.user ? '' :
-        el.li(
-          {className: worldStore.state.currTab === 'MY_BETS' ? 'active' : ''},
-          el.a(
-            {
-              href: 'javascript:void(0)',
-              onClick: this._makeTabChangeHandler('MY_BETS')
-            },
-            'My Bets'
-          )
-        ),
-      // Display faucet tab even to guests so that they're aware that
-      // this casino has one.
-      !config.recaptcha_sitekey ? '' :
-        el.li(
-          {className: worldStore.state.currTab === 'FAUCET' ? 'active' : ''},
-          el.a(
-            {
-              href: 'javascript:void(0)',
-              onClick: this._makeTabChangeHandler('FAUCET')
-            },
-            el.span(null, 'Faucet ')
-          )
-        )
-    );
-  }
-});
-
 
 var TabContent = React.createClass({
   displayName: 'TabContent',
@@ -1643,83 +2523,6 @@ var TabContent = React.createClass({
   }
 });
 
-var MyBetsTabContent = React.createClass({
-  displayName: 'MyBetsTabContent',
-  _onStoreChange: function() {
-    this.forceUpdate();
-  },
-  componentDidMount: function() {
-    worldStore.on('change', this._onStoreChange);
-  },
-  componentWillUnmount: function() {
-    worldStore.off('change', this._onStoreChange);
-  },
-  render: function() {
-    return el.div(
-      null,
-      el.table(
-        {className: 'table'},
-        el.thead(
-          null,
-          el.tr(
-            null,
-            el.th(null, 'ID'),
-            el.th(null, 'Time'),
-            el.th(null, 'Wager'),
-            el.th(null, 'Target'),
-            el.th(null, 'Profit')
-          )
-        ),
-        el.tbody(
-          null,
-          worldStore.state.bets.toArray().map(function(bet) {
-            return el.tr(
-              {
-                key: bet.bet_id || bet.id
-              },
-              // bet id
-              el.td(
-                null,
-                el.a(
-                  {
-                    href: config.mp_browser_uri + '/bets/' + (bet.bet_id || bet.id),
-                    target: '_blank'
-                  },
-                  bet.bet_id || bet.id
-                )
-              ),
-              // Time
-              el.td(
-                null,
-                helpers.formatDateToTime(bet.created_at)
-              ),
-              // wager
-              el.td(
-                null,
-                helpers.round10(bet.wager/100, -2),
-                ' bits'
-              ),
-              // target
-              el.td(
-                null,
-                bet.meta.number.toFixed(2)
-              ),
-              // profit
-              el.td(
-                {style: {color: bet.profit > 0 ? 'green' : 'red'}},
-                bet.profit > 0 ?
-                  '+' + helpers.round10(bet.profit/100, -2) :
-                  helpers.round10(bet.profit/100, -2),
-                ' bits'
-              )
-            );
-          }).reverse()
-        )
-      )
-    );
-  }
-});
-
 var Footer = React.createClass({
   displayName: 'Footer',
   render: function() {
@@ -1733,8 +2536,7 @@ var Footer = React.createClass({
       'Powered by ',
       el.a(
         {
-            href: config.mp_browser_uri + '/apps/' + config.app_id,
-            target: '_blank'
+          href: 'https://www.moneypot.com'
         },
         'Moneypot'
       )
@@ -1746,37 +2548,27 @@ var App = React.createClass({
   displayName: 'App',
   render: function() {
     return el.div(
-	{className: 'x'},
+	{style: {height: '100%'}},
+	el.div(
+      {},
+      // Navbar
+      React.createElement(Navbar, null)
+	  ),
+	  el.div(
+	  {},
+	  React.createElement(BetBox, null)
+	  ),
+	  el.div(
+	  {id:'chatholderdiv'},
+	  React.createElement(ChatBox, null)
+	  ),
+	  el.div(
+	  {id: 'tabsholderdiv'},
+	  React.createElement(Tabs, null)
+)
+	  
+	);
 
-	el.div(null, React.createElement(Navbar, null)),
-      // BetBox & ChatBox
-      el.div(
-        {},
-        el.div(
-          {},
-          React.createElement(BetBox, null)
-        )
-
-      ),
-      el.div(
-        {},
-        el.div(
-          {},
-          React.createElement(ChatBox, null)
-        ),
-		      el.div(
-        {style: {marginTop: '15px'}},
-		console.log(Tabs),
-        React.createElement(Tabs, null)
-      ),
-		el.div(
-		{},
-		React.createElement(TabContent, null)
-		)
-      )
-      // Footer
-
-    );
   }
 });
 
