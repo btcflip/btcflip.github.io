@@ -1955,25 +1955,25 @@ var cond = '>';
 	  ),
 	  el.button(
 	  {type: 'button',
-	  className: 'rollButton2',
+	  className: 'rollButton3',
 	  onClick: this._makeBetHandler('8')},
 	  '8'
 	  ),	  
 	  el.button(
 	  {type: 'button',
-	  className: 'rollButton3',
+	  className: 'rollButton4',
 	  onClick: this._makeBetHandler('16')},
 	  '16'
 	  ),
 	  el.button(
 	  {type: 'button',
-	  className: 'rollButton3',
+	  className: 'rollButton5',
 	  onClick: this._makeBetHandler('32')},
 	  '32'
 	  ),
 	  el.button(
 	  {type: 'button',
-	  className: 'rollButton3',
+	  className: 'rollButton6',
 	  onClick: this._makeBetHandler('64')},
 	  '64'
 	  )	  
