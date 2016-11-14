@@ -692,7 +692,7 @@ function correctCaptcha(a) {
 
 function addNewChatMessage(text)
 {
-	alert(text.text);
+	console.log(text.text);
 	Dispatcher.sendAction('UPDATE_USER');
 	Dispatcher.sendAction('START_REFRESHING_USER');
 }
