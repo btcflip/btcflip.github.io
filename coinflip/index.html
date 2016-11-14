@@ -2,8 +2,12 @@
 <head>
   <title>Bitsino - Coinflip</title>
   <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link href="restive.css" media="all" rel="stylesheet" type="text/css" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="style.css" rel="stylesheet">
+  <script src="https://a2.muscache.com/airbnb/static/libs_jquery_2x-4c61948b1a5fa686ed70f7b9bf4a18c9.js" type="text/javascript"></script>
   <link href="custom.css" rel="stylesheet"> <!-- Recommendation: Put your CSS customizations in custom.css -->
   <meta charset="utf-8">
   <link style="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Patua+One">
@@ -25,17 +29,27 @@
   <script src="node_modules/bootstrap/js/popover.js"></script>
   <script src="app.js" type="text/javascript"></script>
   <script src="//www.google.com/recaptcha/api.js?render=explicit&onload=onRecaptchaLoad" async defer></script>
+  <script src="index_files/libs_jquery_2x-ba3075998163c02622926b9556bc93aa.js" type="text/javascript"></script>
+
+<!-- Install Restive.JS -->
+
+<script type="text/javascript" src="js/restive.min.js"></script>
+     
+<!-- Configure Restive.JS -->
+<script>
+    $( document ).ready(function() {
+        $('body').restive({
+            breakpoints: ['10000'],
+            classes: ['nb'],
+            turbo_classes: 'is_mobile=mobi,is_phone=phone,is_tablet=tablet,is_portrait=portrait,is_landscape=landscape'
+        });
+    });
+</script>
   <script>
   $("#faucetButton").click(function() {
 console.log("klik")
 	document.getElementById("faucetClaimCaptcha").style = "position: absolute; left: 40%; top: 30px;"
 });
-
-$(".menu").click(function(){
-    $("#navkekek").slideToggle(200);
-  });
-
-
 </script>
 <div id="faucetClaimCaptcha" style="top: -90px;"></div>
 </body>

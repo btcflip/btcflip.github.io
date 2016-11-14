@@ -775,7 +775,7 @@ var UserBox = React.createClass({
 	  {className: 'navlogolol'},
 	  el.img(
 	  {className: 'menu',
-	  src: 'http://www.casual-game.net/img/menu_mobile.png?v=2',
+	  src: '',
 	  style: {float: 'right'}},
 	  ''
 	  ),
