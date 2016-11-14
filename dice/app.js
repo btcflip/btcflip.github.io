@@ -534,7 +534,7 @@ var worldStore = new Store('world', {
   accessToken: access_token,
   isRefreshingUser: false,
   hotkeysEnabled: false,
-  currTab: 'ALL_BETS',
+  currTab: 'MY_BETS',
   // TODO: Turn this into myBets or something
   bets: new CBuffer(config.bet_buffer_size),
   // TODO: Fetch list on load alongside socket subscription
@@ -689,8 +689,9 @@ function correctCaptcha(a) {
 
 function addNewChatMessage(text)
 {
-	alert(text.text);
+	console.log(text.text);
 	Dispatcher.sendAction('UPDATE_USER');
+	Dispatcher.sendAction('START_REFRESHING_USER');
 }
 ////////////////////////////////////////////////////////////
 Number.prototype.formatMoney = function(c, d, t){
@@ -2078,16 +2079,6 @@ var Tabs = React.createClass({
   render: function() {
     return el.ul(
       {className: 'nav nav-tabs'},
-      el.li(
-        {className: worldStore.state.currTab === 'ALL_BETS' ? 'active' : ''},
-        el.a(
-          {
-            href: 'javascript:void(0)',
-            onClick: this._makeTabChangeHandler('ALL_BETS')
-          },
-          'All Bets'
-        )
-      ),
       // Only show MY BETS tab if user is logged in
       !worldStore.state.user ? '' :
         el.li(
