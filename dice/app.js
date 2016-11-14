@@ -1769,8 +1769,6 @@ var BetBox = React.createClass({
   },
   _makeBetHandler: function(cond) {
     var self = this;
-if(document.getElementById("betTargetSpan").innerHTML == "HI") { cond = ">"; }
-if(document.getElementById("betTargetSpan").innerHTML == "LO") { cond = "<"; }
     console.assert(cond === '<' || cond === '>');
 
     return function(e) {
@@ -1785,7 +1783,8 @@ if(document.getElementById("betTargetSpan").innerHTML == "LO") { cond = "<"; }
       var wagerSatoshis = betStore.state.wager.num * 100;
       var multiplier = betStore.state.multiplier.num;
       var payoutSatoshis = wagerSatoshis * multiplier;
-
+if(document.getElementById("betTargetSpan").innerHTML == "HI") { cond = ">"; }
+if(document.getElementById("betTargetSpan").innerHTML == "LO") { cond = "<"; }
       var number = helpers.calcNumber(
         cond, helpers.multiplierToWinProb(multiplier)
       );
@@ -1800,6 +1799,7 @@ if(document.getElementById("betTargetSpan").innerHTML == "LO") { cond = "<"; }
       };
 
       MoneyPot.placeSimpleDiceBet(params, {
+		  
         success: function(bet) {
           console.log('Successfully placed bet:', bet);
           // Append to bet list
