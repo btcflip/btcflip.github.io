@@ -1,5 +1,8 @@
 body {
   background-color: #dee3e7;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 #navbar {
   width: 100%;
@@ -20,8 +23,8 @@ body {
 #betsContent {
   background-color: red;
   position: absolute;
-  top: 50%;
-  height: 50%;
+  top: 70%;
+  height: 30%;
   width: 85.4%;
   right: 0%;
 }
@@ -59,8 +62,12 @@ body {
   width: 14.6%;
   left: 0;
   top: 10%;
-  height: 90%;
+  height: 100%;
   background-color: #32404e;
+}
+
+#sidebar {
+  height: 100%;
 }
 
 #sidebar a {
@@ -92,7 +99,7 @@ body {
     display: block;
     transition: 0.3s;
     position: relative;
-    top: -28%;
+    top: -50%;
     right: -75%;
 }
 
@@ -109,7 +116,7 @@ body {
     display: block;
     transition: 0.3s;
     position: relative;
-    top: -30%;
+    top: -50%;
     right: -75%;
 }
 
