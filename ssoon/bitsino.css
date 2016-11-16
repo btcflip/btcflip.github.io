@@ -1,0 +1,119 @@
+body {
+  background-color: #dee3e7;
+}
+#navbar {
+  width: 100%;
+  height: 10%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: white;
+}
+
+.logoimg {
+  width: 5%;
+  height: 100%;
+  position: relative;
+  right: -1%;
+}
+
+#betsContent {
+  background-color: red;
+  position: absolute;
+  top: 50%;
+  height: 50%;
+  width: 85.4%;
+  right: 0%;
+}
+
+.btcprice {
+  position: relative;
+  right: -70%;
+  top: -40%;
+  font-size: 25px;
+  font-weight: 300;
+  color: #32404e;
+  border-style: solid;
+}
+.btcprice b {
+  color: #32404e;
+  font-weight: 600;
+}
+.logotext {
+  font-weight:200;
+  font-size: 40px;
+  color: #32404e;
+  position: relative;
+  right: -1.4%;
+  top: -20%;
+}
+
+.border1 {
+  
+  background-color: red;
+  height: 100%;
+}
+
+.sidebarclass {
+  position: absolute;
+  width: 14.6%;
+  left: 0;
+  top: 10%;
+  height: 90%;
+  background-color: #32404e;
+}
+
+#sidebar a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s
+}
+
+#sidebar a:hover, #offcanvas a:focus{
+    color: white;
+    cursor: pointer;
+}
+  
+.selectables {
+  position: relative;
+  top: 5%;
+  width: 100%;
+  height: 100%;
+}
+
+.buttonclose {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 30px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+    position: relative;
+    top: -28%;
+    right: -75%;
+}
+
+.buttonclose:hover, .buttonclose:focus {
+  color: white;
+  cursor: pointer;
+}
+
+.buttonswitch {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 30px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+    position: relative;
+    top: -30%;
+    right: -75%;
+}
+
+.buttonswitch:hover, .buttonswitch:focus {
+  color: white;
+  cursor: pointer;
+}
